@@ -1,0 +1,1 @@
+﻿<%@ ServiceHost Language="C#" Debug="true" Service="Lithnet.ResourceManagement.WebService.ResourceManagementWebServicev1" CodeBehind="ResourceManagementWebServicev1.svc.cs" %>
