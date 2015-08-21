@@ -29,7 +29,7 @@ namespace Lithnet.ResourceManagement.WebService
         void DeleteResourceByID(string id);
 
         [OperationContract]
-        [WebInvoke(UriTemplate = "/resources", Method = "POST")]
+        [WebInvoke(UriTemplate = "/resources/", Method = "POST")]
         ResourceObject CreateResource(ResourceUpdateRequest resource);
 
         [OperationContract]
@@ -41,7 +41,7 @@ namespace Lithnet.ResourceManagement.WebService
         KeyValuePair<string, string[]> GetResourceAttributeByID(string id, string attributeName);
 
         [OperationContract]
-        [WebGet(UriTemplate = "/resource/{objectType}/{key}/{keyValue}/{attributeName}")]
+        [WebGet(UriTemplate = "/resources/{objectType}/{key}/{keyValue}/{attributeName}")]
         KeyValuePair<string, string[]> GetResourceAttributeByKey(string objectType, string key, string keyValue, string attributeName);
     }
 }
