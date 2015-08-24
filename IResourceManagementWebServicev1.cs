@@ -17,32 +17,32 @@ namespace Lithnet.ResourceManagement.WebService
         IEnumerable<ResourceObject> GetResources();
       
         [OperationContract]
-        [WebGet(UriTemplate = "/resources/{objectType}/{key}/{keyValue}")]
+        [WebGet(UriTemplate = "/resources/{objectType}/{key}/{keyValue}/")]
         ResourceObject GetResourceByKey(string objectType, string key, string keyValue);
 
         [OperationContract]
-        [WebGet(UriTemplate = "/resources/{id}")]
+        [WebGet(UriTemplate = "/resources/{id}/")]
         ResourceObject GetResourceByID(string id);
 
         [OperationContract]
-        [WebInvoke(UriTemplate = "/resources/{id}", Method="DELETE")]
+        [WebInvoke(UriTemplate = "/resources/{id}/", Method="DELETE")]
         void DeleteResourceByID(string id);
 
         [OperationContract]
         [WebInvoke(UriTemplate = "/resources/", Method = "POST")]
-        ResourceObject CreateResource(ResourceUpdateRequest resource);
+        string CreateResource(ResourceUpdateRequest resource);
 
         [OperationContract]
-        [WebInvoke(UriTemplate = "/resources/{id}", Method = "PUT")]
+        [WebInvoke(UriTemplate = "/resources/{id}/", Method = "PUT")]
         void UpdateResource(string id, ResourceUpdateRequest request);
 
-        [OperationContract]
-        [WebGet(UriTemplate = "/resources/{id}/{attributeName}")]
-        KeyValuePair<string, string[]> GetResourceAttributeByID(string id, string attributeName);
+        //[OperationContract]
+        //[WebGet(UriTemplate = "/resources/{id}/{attributeName}/")]
+        //KeyValuePair<string, string[]> GetResourceAttributeByID(string id, string attributeName);
 
-        [OperationContract]
-        [WebGet(UriTemplate = "/resources/{objectType}/{key}/{keyValue}/{attributeName}")]
-        KeyValuePair<string, string[]> GetResourceAttributeByKey(string objectType, string key, string keyValue, string attributeName);
+        //[OperationContract]
+        //[WebGet(UriTemplate = "/resources/{objectType}/{key}/{keyValue}/{attributeName}/")]
+        //KeyValuePair<string, string[]> GetResourceAttributeByKey(string objectType, string key, string keyValue, string attributeName);
     }
 }
 

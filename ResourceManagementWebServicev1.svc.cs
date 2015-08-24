@@ -194,7 +194,7 @@ namespace Lithnet.ResourceManagement.WebService
             Global.Client.DeleteResource(id);
         }
 
-        public ResourceObject CreateResource(ResourceUpdateRequest request)
+        public string CreateResource(ResourceUpdateRequest request)
         {
             AttributeValueUpdate objectTypeUpdate = request.Attributes.FirstOrDefault(t => t.Name == AttributeNames.ObjectType);
 
@@ -229,7 +229,7 @@ namespace Lithnet.ResourceManagement.WebService
             }
 
             Global.Client.SaveResource(resource);
-            return resource;
+            return resource.ObjectID.ToString(false);
         }
 
         public void UpdateResource(string id, ResourceUpdateRequest request)
