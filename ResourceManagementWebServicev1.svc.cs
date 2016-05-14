@@ -13,11 +13,18 @@ using System.Net;
 
 namespace Lithnet.ResourceManagement.WebService
 {
+    using SwaggerWcf.Attributes;
+
+    [SwaggerWcf("/v1")]
     [AspNetCompatibilityRequirements(RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed)]
     [KnownType(typeof(ResourceObject))]
     [KnownType(typeof(string))]
     public class ResourceManagementWebServicev1 : IResourceManagementWebServicev1
     {
+        [SwaggerWcfTag("Resources")]
+        [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
+        [SwaggerWcfResponse(HttpStatusCode.NotFound, "NotFound")]
+        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
         public IEnumerable<ResourceObject> GetResources()
         {
             try
@@ -61,6 +68,10 @@ namespace Lithnet.ResourceManagement.WebService
             }
         }
 
+        [SwaggerWcfTag("Resources")]
+        [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
+        [SwaggerWcfResponse(HttpStatusCode.NotFound, "NotFound")]
+        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
         public ResourceObject GetResourceByKey(string objectType, string key, string keyValue)
         {
             ResourceObject resource;
@@ -89,6 +100,10 @@ namespace Lithnet.ResourceManagement.WebService
             return resource;
         }
 
+        [SwaggerWcfTag("Resources")]
+        [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
+        [SwaggerWcfResponse(HttpStatusCode.NotFound, "NotFound")]
+        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
         public ResourceObject GetResourceByID(string id)
         {
             try
@@ -116,6 +131,10 @@ namespace Lithnet.ResourceManagement.WebService
             }
         }
 
+        [SwaggerWcfTag("Resources")]
+        [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
+        [SwaggerWcfResponse(HttpStatusCode.NotFound, "NotFound")]
+        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
         public KeyValuePair<string, string[]> GetResourceAttributeByID(string id, string attribute)
         {
             try
@@ -180,6 +199,10 @@ namespace Lithnet.ResourceManagement.WebService
             }
         }
 
+        [SwaggerWcfTag("Resources")]
+        [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
+        [SwaggerWcfResponse(HttpStatusCode.NotFound, "NotFound")]
+        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
         public KeyValuePair<string, string[]> GetResourceAttributeByKey(string objectType, string key, string keyValue, string attribute)
         {
             try
@@ -244,6 +267,10 @@ namespace Lithnet.ResourceManagement.WebService
             }
         }
 
+        [SwaggerWcfTag("Resources")]
+        [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
+        [SwaggerWcfResponse(HttpStatusCode.NotFound, "NotFound")]
+        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
         public void DeleteResourceByID(string id)
         {
             try
@@ -268,6 +295,10 @@ namespace Lithnet.ResourceManagement.WebService
             }
         }
 
+        [SwaggerWcfTag("Resources")]
+        [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
+        [SwaggerWcfResponse(HttpStatusCode.NotFound, "NotFound")]
+        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
         public string CreateResource(ResourceUpdateRequest request)
         {
             try
@@ -321,6 +352,10 @@ namespace Lithnet.ResourceManagement.WebService
             }
         }
 
+        [SwaggerWcfTag("Resources")]
+        [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
+        [SwaggerWcfResponse(HttpStatusCode.NotFound, "NotFound")]
+        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
         public void UpdateResource(string id, ResourceUpdateRequest request)
         {
             try

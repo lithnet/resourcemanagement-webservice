@@ -6,8 +6,10 @@ using System.Runtime.Serialization;
 
 namespace Lithnet.ResourceManagement.WebService
 {
+    using SwaggerWcf.Attributes;
+
     [Serializable]
-    public class ResourceUpdateRequest : ISerializable
+        public class ResourceUpdateRequest : ISerializable
     {
         public List<AttributeValueUpdate> Attributes { get; set; }
 
