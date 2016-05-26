@@ -10,6 +10,8 @@ using Lithnet.ResourceManagement.Client;
 
 namespace Lithnet.ResourceManagement.WebService
 {
+    using SwaggerWcf;
+
     public class Global : System.Web.HttpApplication
     {
         private static ResourceManagementClient client;
@@ -17,6 +19,7 @@ namespace Lithnet.ResourceManagement.WebService
         protected void Application_Start(object sender, EventArgs e)
         {
             RouteTable.Routes.Add(new ServiceRoute("v1", new WebServiceHostFactory(), typeof(ResourceManagementWebServicev1)));
+            RouteTable.Routes.Add(new ServiceRoute("api-docs", new WebServiceHostFactory(), typeof(SwaggerWcfEndpoint)));
             var x = Global.Client;
         }
 
