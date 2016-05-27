@@ -57,7 +57,7 @@ namespace Lithnet.ResourceManagement.WebService
         [SwaggerWcfPath("Approve request", "Approve request")]
         [OperationContract]
         [WebInvoke(UriTemplate = "/approvals/{id}/{decision}", Method = "POST", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json )]
-        void SetPendingApproval(string id, string decision, string reason);
+        void SetPendingApproval(string id, string decision, ApprovalReason reason);
     }
 }
 

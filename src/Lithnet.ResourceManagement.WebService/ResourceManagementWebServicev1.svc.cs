@@ -447,7 +447,7 @@ namespace Lithnet.ResourceManagement.WebService
         [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
         [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
         [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
-        public void SetPendingApproval(string id, string decision, string reason)
+        public void SetPendingApproval(string id, string decision, ApprovalReason reason)
         {
             try
             {
@@ -455,11 +455,11 @@ namespace Lithnet.ResourceManagement.WebService
 
                 if (string.Equals(decision, "approve", StringComparison.OrdinalIgnoreCase))
                 {
-                    Global.Client.Approve(approval, true, reason);
+                    Global.Client.Approve(approval, true, reason?.Reason);
                 }
                 else if (string.Equals(decision, "reject", StringComparison.OrdinalIgnoreCase))
                 {
-                    Global.Client.Approve(approval, false, reason);
+                    Global.Client.Approve(approval, false, reason?.Reason);
                 }
                 else
                 {
