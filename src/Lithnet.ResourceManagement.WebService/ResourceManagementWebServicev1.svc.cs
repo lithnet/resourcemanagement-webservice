@@ -10,7 +10,13 @@ using System.Net;
 
 namespace Lithnet.ResourceManagement.WebService
 {
+    using System.IO;
+    using System.Text;
+    using System.Xml.Serialization;
+    using Microsoft.ResourceManagement.WebServices.WSResourceManagement;
+    using Newtonsoft.Json;
     using SwaggerWcf.Attributes;
+    using ApprovalStatus = Client.ApprovalStatus;
 
     [SwaggerWcf("/v1")]
     [AspNetCompatibilityRequirements(RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed)]
@@ -41,7 +47,7 @@ namespace Lithnet.ResourceManagement.WebService
                         filter = $"/{objectType}";
                     }
                 }
-                
+
                 if (attributes != null)
                 {
                     return Global.Client.GetResources(filter, attributes.Split(',')).ToList();
@@ -482,6 +488,74 @@ namespace Lithnet.ResourceManagement.WebService
             {
                 throw WebExceptionHelper.CreateWebException(HttpStatusCode.InternalServerError, ex);
             }
+        }
+
+        [SwaggerWcfTag("Approvals")]
+        [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
+        [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
+        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
+        public Stream GetRequestParameters(string id)
+        {
+            try
+            {
+                ResourceObject request = Global.Client.GetResourceByKey("Request", AttributeNames.ObjectID, id, new[] { "RequestParameter" });
+
+                if (request == null)
+                {
+                    throw new WebFaultException(HttpStatusCode.NotFound);
+                }
+
+                if (!request.Attributes.ContainsAttribute("RequestParameter") || request.Attributes["RequestParameter"].IsNull)
+                {
+                    return new MemoryStream();
+                }
+                
+                IList<string> parameters = request.Attributes["RequestParameter"].StringValues;
+                List<RequestParameter> requestParameters = new List<RequestParameter>();
+
+                foreach (string param in parameters)
+                {
+                    requestParameters.Add(XmlDeserializeFromString<RequestParameter>(param));
+                }
+
+                WebOperationContext.Current.OutgoingResponse.ContentType ="application/json; charset=utf-8";
+
+                return new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(requestParameters)));
+            }
+            catch (WebFaultException)
+            {
+                throw;
+            }
+            catch (WebFaultException<ExceptionData>)
+            {
+                throw;
+            }
+            catch (ArgumentException ex)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
+            }
+            catch (Exception ex)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.InternalServerError, ex);
+            }
+        }
+
+        public static T XmlDeserializeFromString<T>(string objectData)
+        {
+            return (T)XmlDeserializeFromString(objectData, typeof(T));
+        }
+
+        public static object XmlDeserializeFromString(string objectData, Type type)
+        {
+            var serializer = new XmlSerializer(type);
+            object result;
+
+            using (TextReader reader = new StringReader(objectData))
+            {
+                result = serializer.Deserialize(reader);
+            }
+
+            return result;
         }
     }
 }

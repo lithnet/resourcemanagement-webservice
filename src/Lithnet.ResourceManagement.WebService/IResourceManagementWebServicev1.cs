@@ -9,6 +9,8 @@ using Lithnet.ResourceManagement.Client;
 
 namespace Lithnet.ResourceManagement.WebService
 {
+    using System.IO;
+    using Microsoft.ResourceManagement.WebServices.WSResourceManagement;
     using SwaggerWcf.Attributes;
 
     [ServiceContract]
@@ -18,7 +20,7 @@ namespace Lithnet.ResourceManagement.WebService
         [OperationContract]
         [WebGet(UriTemplate = "/resources/?", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
         IEnumerable<ResourceObject> GetResources();
-      
+
         [SwaggerWcfPath("Get resource by key", "Get resources")]
         [OperationContract]
         [WebGet(UriTemplate = "/resources/{objectType}/{key}/{keyValue}/", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
@@ -31,12 +33,12 @@ namespace Lithnet.ResourceManagement.WebService
 
         [SwaggerWcfPath("Delete resource", "Delete resource")]
         [OperationContract]
-        [WebInvoke(UriTemplate = "/resources/{id}/", Method="DELETE", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
+        [WebInvoke(UriTemplate = "/resources/{id}/", Method = "DELETE", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
         void DeleteResourceByID(string id);
 
         [SwaggerWcfPath("Create resource", "Create resource")]
         [OperationContract]
-        [WebInvoke(UriTemplate = "/resources/", Method = "POST", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json )]
+        [WebInvoke(UriTemplate = "/resources/", Method = "POST", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
         string CreateResource(ResourceUpdateRequest resource);
 
         [SwaggerWcfPath("Update resource", "Update resources")]
@@ -56,8 +58,13 @@ namespace Lithnet.ResourceManagement.WebService
 
         [SwaggerWcfPath("Approve request", "Approve request")]
         [OperationContract]
-        [WebInvoke(UriTemplate = "/approvals/{id}/{decision}", Method = "POST", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json )]
+        [WebInvoke(UriTemplate = "/approvals/{id}/{decision}", Method = "POST", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
         void SetPendingApproval(string id, string decision, ApprovalReason reason);
+
+        [SwaggerWcfPath("Get request parameters", "Get request parametters")]
+        [OperationContract]
+        [WebGet(UriTemplate = "/request/{id}/parameters", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
+        Stream GetRequestParameters(string id);
     }
 }
 
