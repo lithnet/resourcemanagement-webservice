@@ -89,6 +89,9 @@ namespace Lithnet.ResourceManagement.WebService
             ResourceObject resource;
             try
             {
+                ResourceManagementSchema.ValidateAttributeName(key);
+                ResourceManagementSchema.ValidateObjectTypeName(objectType);
+
                 resource = Global.Client.GetResourceByKey(objectType, key, keyValue);
 
                 if (resource == null)
@@ -124,11 +127,7 @@ namespace Lithnet.ResourceManagement.WebService
         {
             try
             {
-                Guid result;
-                if (!Guid.TryParse(id, out result))
-                {
-                    throw new ArgumentException("The specified value was not a GUID type", nameof(id));
-                }
+                ResourceManagementWebServicev1.ValidateID(id);
 
                 ResourceObject resource = Global.Client.GetResource(id);
 
@@ -165,11 +164,8 @@ namespace Lithnet.ResourceManagement.WebService
         {
             try
             {
-                Guid result;
-                if (!Guid.TryParse(id, out result))
-                {
-                    throw new ArgumentException("The specified value was not a GUID type", nameof(id));
-                }
+                ResourceManagementSchema.ValidateAttributeName(attribute);
+                ResourceManagementWebServicev1.ValidateID(id);
 
                 ResourceObject resource = Global.Client.GetResource(id, new List<string>() { attribute });
                 if (resource == null)
@@ -243,7 +239,11 @@ namespace Lithnet.ResourceManagement.WebService
         {
             try
             {
+                ResourceManagementSchema.ValidateAttributeName(attribute);
+                ResourceManagementSchema.ValidateObjectTypeName(objectType);
+
                 ResourceObject resource = Global.Client.GetResourceByKey(objectType, key, keyValue, new List<string>() { attribute });
+
                 if (resource == null)
                 {
                     throw new WebFaultException(HttpStatusCode.NotFound);
@@ -315,11 +315,7 @@ namespace Lithnet.ResourceManagement.WebService
         {
             try
             {
-                Guid result;
-                if (!Guid.TryParse(id, out result))
-                {
-                    throw new ArgumentException("The specified value was not a GUID type", nameof(id));
-                }
+                ResourceManagementWebServicev1.ValidateID(id);
 
                 Global.Client.DeleteResource(id);
             }
@@ -414,11 +410,7 @@ namespace Lithnet.ResourceManagement.WebService
         {
             try
             {
-                Guid result;
-                if (!Guid.TryParse(id, out result))
-                {
-                    throw new ArgumentException("The specified value was not a GUID type", nameof(id));
-                }
+                ResourceManagementWebServicev1.ValidateID(id);
 
                 ResourceObject resource = Global.Client.GetResource(id);
                 foreach (AttributeValueUpdate kvp in request.Attributes)
@@ -513,11 +505,7 @@ namespace Lithnet.ResourceManagement.WebService
         {
             try
             {
-                Guid result;
-                if (!Guid.TryParse(id, out result))
-                {
-                    throw new ArgumentException("The specified value was not a GUID type", nameof(id));
-                }
+                ResourceManagementWebServicev1.ValidateID(id);
 
                 ResourceObject approval = this.GetResourceByKey(ObjectTypeNames.Approval, AttributeNames.ObjectID, id);
 
@@ -560,11 +548,7 @@ namespace Lithnet.ResourceManagement.WebService
         {
             try
             {
-                Guid result;
-                if (!Guid.TryParse(id, out result))
-                {
-                    throw new ArgumentException("The specified value was not a GUID type", nameof(id));
-                }
+                ResourceManagementWebServicev1.ValidateID(id);
 
                 ResourceObject request = Global.Client.GetResourceByKey("Request", AttributeNames.ObjectID, id, new[] { "RequestParameter" });
 
@@ -624,6 +608,16 @@ namespace Lithnet.ResourceManagement.WebService
             }
 
             return result;
+        }
+
+        private static void ValidateID(string id)
+        {
+            Guid result;
+
+            if (!Guid.TryParse(id, out result))
+            {
+                throw new ArgumentException("The specified value was not a GUID type", nameof(id));
+            }
         }
     }
 }
