@@ -70,6 +70,10 @@ namespace Lithnet.ResourceManagement.WebService
             {
                 throw;
             }
+            catch (ArgumentException ex)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
+            }
             catch (Exception ex)
             {
                 throw WebExceptionHelper.CreateWebException(HttpStatusCode.InternalServerError, ex);
@@ -100,6 +104,10 @@ namespace Lithnet.ResourceManagement.WebService
             {
                 throw;
             }
+            catch (ArgumentException ex)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
+            }
             catch (Exception ex)
             {
                 throw WebExceptionHelper.CreateWebException(HttpStatusCode.InternalServerError, ex);
@@ -116,6 +124,12 @@ namespace Lithnet.ResourceManagement.WebService
         {
             try
             {
+                Guid result;
+                if (!Guid.TryParse(id, out result))
+                {
+                    throw new ArgumentException("The specified value was not a GUID type", nameof(id));
+                }
+
                 ResourceObject resource = Global.Client.GetResource(id);
 
                 if (resource == null)
@@ -133,6 +147,10 @@ namespace Lithnet.ResourceManagement.WebService
             {
                 throw;
             }
+            catch (ArgumentException ex)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
+            }
             catch (Exception ex)
             {
                 throw WebExceptionHelper.CreateWebException(HttpStatusCode.InternalServerError, ex);
@@ -147,6 +165,12 @@ namespace Lithnet.ResourceManagement.WebService
         {
             try
             {
+                Guid result;
+                if (!Guid.TryParse(id, out result))
+                {
+                    throw new ArgumentException("The specified value was not a GUID type", nameof(id));
+                }
+
                 ResourceObject resource = Global.Client.GetResource(id, new List<string>() { attribute });
                 if (resource == null)
                 {
@@ -200,6 +224,10 @@ namespace Lithnet.ResourceManagement.WebService
             catch (WebFaultException<ExceptionData>)
             {
                 throw;
+            }
+            catch (ArgumentException ex)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
             }
             catch (Exception ex)
             {
@@ -269,6 +297,10 @@ namespace Lithnet.ResourceManagement.WebService
             {
                 throw;
             }
+            catch (ArgumentException ex)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
+            }
             catch (Exception ex)
             {
                 throw WebExceptionHelper.CreateWebException(HttpStatusCode.InternalServerError, ex);
@@ -283,6 +315,12 @@ namespace Lithnet.ResourceManagement.WebService
         {
             try
             {
+                Guid result;
+                if (!Guid.TryParse(id, out result))
+                {
+                    throw new ArgumentException("The specified value was not a GUID type", nameof(id));
+                }
+
                 Global.Client.DeleteResource(id);
             }
             catch (ResourceNotFoundException)
@@ -296,6 +334,10 @@ namespace Lithnet.ResourceManagement.WebService
             catch (WebFaultException<ExceptionData>)
             {
                 throw;
+            }
+            catch (ArgumentException ex)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
             }
             catch (Exception ex)
             {
@@ -354,6 +396,10 @@ namespace Lithnet.ResourceManagement.WebService
             {
                 throw;
             }
+            catch (ArgumentException ex)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
+            }
             catch (Exception ex)
             {
                 throw WebExceptionHelper.CreateWebException(HttpStatusCode.InternalServerError, ex);
@@ -368,6 +414,12 @@ namespace Lithnet.ResourceManagement.WebService
         {
             try
             {
+                Guid result;
+                if (!Guid.TryParse(id, out result))
+                {
+                    throw new ArgumentException("The specified value was not a GUID type", nameof(id));
+                }
+
                 ResourceObject resource = Global.Client.GetResource(id);
                 foreach (AttributeValueUpdate kvp in request.Attributes)
                 {
@@ -398,6 +450,10 @@ namespace Lithnet.ResourceManagement.WebService
             catch (WebFaultException<ExceptionData>)
             {
                 throw;
+            }
+            catch (ArgumentException ex)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
             }
             catch (Exception ex)
             {
@@ -457,6 +513,12 @@ namespace Lithnet.ResourceManagement.WebService
         {
             try
             {
+                Guid result;
+                if (!Guid.TryParse(id, out result))
+                {
+                    throw new ArgumentException("The specified value was not a GUID type", nameof(id));
+                }
+
                 ResourceObject approval = this.GetResourceByKey(ObjectTypeNames.Approval, AttributeNames.ObjectID, id);
 
                 if (string.Equals(decision, "approve", StringComparison.OrdinalIgnoreCase))
@@ -498,6 +560,12 @@ namespace Lithnet.ResourceManagement.WebService
         {
             try
             {
+                Guid result;
+                if (!Guid.TryParse(id, out result))
+                {
+                    throw new ArgumentException("The specified value was not a GUID type", nameof(id));
+                }
+
                 ResourceObject request = Global.Client.GetResourceByKey("Request", AttributeNames.ObjectID, id, new[] { "RequestParameter" });
 
                 if (request == null)
