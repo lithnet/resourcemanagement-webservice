@@ -2,8 +2,8 @@
 The Lithnet FIM/MIM Service REST API is a wrapper for the FIM/MIM Service's SOAP/WCF endpoint, exposing create, update, delete and search functionality via a series of standard HTTP calls. The API returns JSON-formatted data, making it compatible with a wide range of platforms and services
 
 ### Guides
-* [Installing the web service](https://github.com/lithnet/resourcemanagement-powershell/wiki/installing-the-web-service)
-* [API reference](https://github.com/lithnet/resourcemanagement-powershell/wiki/api-reference)
+* [Installing the web service](https://github.com/lithnet/resourcemanagement-webservice/wiki/installing-the-web-service)
+* [API reference](https://github.com/lithnet/resourcemanagement-webservice/wiki/api-reference)
 
 ### Download the software
 Download the [current release](https://github.com/lithnet/resourcemanagement-webservice/releases/)
