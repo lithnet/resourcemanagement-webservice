@@ -9,16 +9,11 @@ using SwaggerWcf.Attributes;
 namespace Lithnet.ResourceManagement.WebService
 {
     [ServiceContract]
-    public interface IResourceManagementWebServicev1
+    public interface IResourceManagementWebServicev2
     {
         [SwaggerWcfPath("Get resources", "Get resources")]
         [OperationContract]
         [WebGet(UriTemplate = "/resources/?", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
-        IEnumerable<ResourceObject> GetResources();
-
-        [SwaggerWcfPath("Get resources (paged)", "Get resources")]
-        [OperationContract]
-        [WebGet(UriTemplate = "/resources/paged/?", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
         PagedResultSet GetResourcesPaged();
 
         [SwaggerWcfPath("Get resource by key", "Get resources")]

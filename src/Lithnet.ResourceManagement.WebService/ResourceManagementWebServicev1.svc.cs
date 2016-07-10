@@ -1,29 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.ServiceModel.Web;
-using System.ServiceModel.Activation;
-using Lithnet.ResourceManagement.Client;
+﻿using Lithnet.ResourceManagement.Client;
+using Microsoft.ResourceManagement.WebServices.WSResourceManagement;
+using Newtonsoft.Json;
+using SwaggerWcf.Attributes;
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
 using System.Net;
+using System.Runtime.Caching;
+using System.Runtime.Serialization;
+using System.ServiceModel.Activation;
+using System.ServiceModel.Web;
+using System.Text;
+using System.Xml.Serialization;
 
 namespace Lithnet.ResourceManagement.WebService
 {
-    using System.IO;
-    using System.Text;
-    using System.Xml.Serialization;
-    using Microsoft.ResourceManagement.WebServices.WSResourceManagement;
-    using Newtonsoft.Json;
-    using SwaggerWcf.Attributes;
-    using ApprovalStatus = Client.ApprovalStatus;
-
     [SwaggerWcf("/v1")]
     [AspNetCompatibilityRequirements(RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed)]
     [KnownType(typeof(ResourceObject))]
     [KnownType(typeof(string))]
     public class ResourceManagementWebServicev1 : IResourceManagementWebServicev1
     {
+        private static ObjectCache searchCache = MemoryCache.Default;
+
         [SwaggerWcfTag("Resources")]
         [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
         [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
@@ -35,6 +37,7 @@ namespace Lithnet.ResourceManagement.WebService
                 string attributes = WebOperationContext.Current?.IncomingRequest.UriTemplateMatch.QueryParameters["attributes"];
                 string objectType = WebOperationContext.Current?.IncomingRequest.UriTemplateMatch.QueryParameters["objectType"];
                 string filter = WebOperationContext.Current?.IncomingRequest.UriTemplateMatch.QueryParameters["filter"];
+                CultureInfo locale = GetLocaleFromParameters();
 
                 if (filter == null)
                 {
@@ -50,16 +53,16 @@ namespace Lithnet.ResourceManagement.WebService
 
                 if (attributes != null)
                 {
-                    return Global.Client.GetResources(filter, attributes.Split(',')).ToList();
+                    return Global.Client.GetResources(filter, attributes.Split(','), locale).ToList();
                 }
 
                 if (objectType != null)
                 {
-                    return Global.Client.GetResources(filter, ResourceManagementSchema.ObjectTypes[objectType].Attributes.Select(t => t.SystemName)).ToList();
+                    return Global.Client.GetResources(filter, ResourceManagementSchema.ObjectTypes[objectType].Attributes.Select(t => t.SystemName), locale).ToList();
                 }
                 else
                 {
-                    return Global.Client.GetResources(filter).ToList();
+                    return Global.Client.GetResources(filter, locale).ToList();
                 }
             }
             catch (WebFaultException)
@@ -84,6 +87,117 @@ namespace Lithnet.ResourceManagement.WebService
         [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
         [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
         [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
+        public PagedResultSet GetResourcesPaged()
+        {
+            try
+            {
+                string attributes = WebOperationContext.Current?.IncomingRequest.UriTemplateMatch.QueryParameters["attributes"];
+                string objectType = WebOperationContext.Current?.IncomingRequest.UriTemplateMatch.QueryParameters["objectType"];
+                string filter = WebOperationContext.Current?.IncomingRequest.UriTemplateMatch.QueryParameters["filter"];
+                string pageSizeParam = WebOperationContext.Current?.IncomingRequest.UriTemplateMatch.QueryParameters["pageSize"];
+                string currentIndexParam = WebOperationContext.Current?.IncomingRequest.UriTemplateMatch.QueryParameters["index"];
+                string token = WebOperationContext.Current?.IncomingRequest.UriTemplateMatch.QueryParameters["token"];
+                CultureInfo locale = GetLocaleFromParameters();
+
+                int pageSize = Convert.ToInt32(pageSizeParam);
+                if (pageSize <= 0)
+                {
+                    throw new ArgumentException("Page size must be greater than zero");
+                }
+
+                int index = currentIndexParam == null ? -1 : Convert.ToInt32(currentIndexParam);
+               
+                if (filter == null)
+                {
+                    if (objectType == null)
+                    {
+                        filter = "/*";
+                    }
+                    else
+                    {
+                        filter = $"/{objectType}";
+                    }
+                }
+
+                SearchResultPager p;
+                
+                if (token == null)
+                {
+                    if (attributes != null)
+                    {
+                        p = Global.Client.GetResourcesPaged(filter, pageSize, attributes.Split(','), locale);
+                    }
+                    else if (objectType != null)
+                    {
+                        p = Global.Client.GetResourcesPaged(filter, pageSize, ResourceManagementSchema.ObjectTypes[objectType].Attributes.Select(t => t.SystemName), locale);
+                    }
+                    else
+                    {
+                        p = Global.Client.GetResourcesPaged(filter, pageSize, locale);
+                    }
+                }
+                else
+                {
+                    p = (SearchResultPager)ResourceManagementWebServicev1.searchCache.Remove(token + filter);
+
+                    if (p == null)
+                    {
+                        throw new ArgumentException("Invalid token");
+                    }
+                }
+
+                if (index >= 0)
+                {
+                    p.CurrentIndex = index;
+                }
+
+                p.PageSize = pageSize;
+                
+                PagedResultSet results = new PagedResultSet();
+                results.Token = token ?? Guid.NewGuid().ToString();
+                results.TotalCount = p.TotalCount;
+                results.Results = p.GetNextPage().ToList();
+                results.HasMoreItems = p.HasMoreItems;
+
+                ResourceManagementWebServicev1.searchCache.Add(results.Token + filter, p, new CacheItemPolicy() { SlidingExpiration = new TimeSpan(0, 5, 0) });
+
+                return results;                
+            }
+            catch (WebFaultException)
+            {
+                throw;
+            }
+            catch (WebFaultException<ExceptionData>)
+            {
+                throw;
+            }
+            catch (ArgumentException ex)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
+            }
+            catch (Exception ex)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.InternalServerError, ex);
+            }
+        }
+
+
+        private static CultureInfo GetLocaleFromParameters()
+        {
+            string locale = WebOperationContext.Current?.IncomingRequest.UriTemplateMatch.QueryParameters["locale"];
+            CultureInfo culture = null;
+            if (locale != null)
+            {
+                culture = new CultureInfo(locale);
+            }
+
+            return culture;
+        }
+
+        [SwaggerWcfTag("Resources")]
+        [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
+        [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
+        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
         public ResourceObject GetResourceByKey(string objectType, string key, string keyValue)
         {
             ResourceObject resource;
@@ -91,12 +205,13 @@ namespace Lithnet.ResourceManagement.WebService
             {
                 ResourceManagementSchema.ValidateAttributeName(key);
                 ResourceManagementSchema.ValidateObjectTypeName(objectType);
+                CultureInfo locale = GetLocaleFromParameters();
 
-                resource = Global.Client.GetResourceByKey(objectType, key, keyValue);
+                resource = Global.Client.GetResourceByKey(objectType, key, keyValue, locale);
 
                 if (resource == null)
                 {
-                    throw new WebFaultException(HttpStatusCode.NotFound);
+                    throw new ResourceNotFoundException();
                 }
             }
             catch (WebFaultException)
@@ -106,6 +221,10 @@ namespace Lithnet.ResourceManagement.WebService
             catch (WebFaultException<ExceptionData>)
             {
                 throw;
+            }
+            catch (ResourceNotFoundException)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.NotFound);
             }
             catch (ArgumentException ex)
             {
@@ -128,12 +247,13 @@ namespace Lithnet.ResourceManagement.WebService
             try
             {
                 ResourceManagementWebServicev1.ValidateID(id);
+                CultureInfo locale = GetLocaleFromParameters();
 
-                ResourceObject resource = Global.Client.GetResource(id);
+                ResourceObject resource = Global.Client.GetResource(id, locale);
 
                 if (resource == null)
                 {
-                    throw new WebFaultException(HttpStatusCode.NotFound);
+                    throw new ResourceNotFoundException();
                 }
 
                 return resource;
@@ -145,6 +265,10 @@ namespace Lithnet.ResourceManagement.WebService
             catch (WebFaultException<ExceptionData>)
             {
                 throw;
+            }
+            catch (ResourceNotFoundException)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.NotFound);
             }
             catch (ArgumentException ex)
             {
@@ -166,11 +290,12 @@ namespace Lithnet.ResourceManagement.WebService
             {
                 ResourceManagementSchema.ValidateAttributeName(attribute);
                 ResourceManagementWebServicev1.ValidateID(id);
+                CultureInfo locale = GetLocaleFromParameters();
 
-                ResourceObject resource = Global.Client.GetResource(id, new List<string>() { attribute });
+                ResourceObject resource = Global.Client.GetResource(id, new List<string>() { attribute }, locale);
                 if (resource == null)
                 {
-                    throw new WebFaultException(HttpStatusCode.NotFound);
+                    throw new ResourceNotFoundException();
                 }
 
                 object value = resource.Attributes[attribute].Value;
@@ -220,6 +345,10 @@ namespace Lithnet.ResourceManagement.WebService
             catch (WebFaultException<ExceptionData>)
             {
                 throw;
+            }
+            catch (ResourceNotFoundException)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.NotFound);
             }
             catch (ArgumentException ex)
             {
@@ -241,12 +370,13 @@ namespace Lithnet.ResourceManagement.WebService
             {
                 ResourceManagementSchema.ValidateAttributeName(attribute);
                 ResourceManagementSchema.ValidateObjectTypeName(objectType);
+                CultureInfo locale = GetLocaleFromParameters();
 
-                ResourceObject resource = Global.Client.GetResourceByKey(objectType, key, keyValue, new List<string>() { attribute });
+                ResourceObject resource = Global.Client.GetResourceByKey(objectType, key, keyValue, new List<string>() { attribute }, locale);
 
                 if (resource == null)
                 {
-                    throw new WebFaultException(HttpStatusCode.NotFound);
+                    throw new ResourceNotFoundException();
                 }
 
                 object value = resource.Attributes[attribute].Value;
@@ -296,6 +426,10 @@ namespace Lithnet.ResourceManagement.WebService
             catch (WebFaultException<ExceptionData>)
             {
                 throw;
+            }
+            catch (ResourceNotFoundException)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.NotFound);
             }
             catch (ArgumentException ex)
             {
@@ -319,10 +453,6 @@ namespace Lithnet.ResourceManagement.WebService
 
                 Global.Client.DeleteResource(id);
             }
-            catch (ResourceNotFoundException)
-            {
-                throw new WebFaultException(HttpStatusCode.NotFound);
-            }
             catch (WebFaultException)
             {
                 throw;
@@ -330,6 +460,10 @@ namespace Lithnet.ResourceManagement.WebService
             catch (WebFaultException<ExceptionData>)
             {
                 throw;
+            }
+            catch (ResourceNotFoundException)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.NotFound);
             }
             catch (ArgumentException ex)
             {
@@ -411,8 +545,9 @@ namespace Lithnet.ResourceManagement.WebService
             try
             {
                 ResourceManagementWebServicev1.ValidateID(id);
+                CultureInfo locale = GetLocaleFromParameters();
 
-                ResourceObject resource = Global.Client.GetResource(id);
+                ResourceObject resource = Global.Client.GetResource(id, locale);
                 foreach (AttributeValueUpdate kvp in request.Attributes)
                 {
                     if (kvp.Value.Length > 1)
@@ -429,11 +564,7 @@ namespace Lithnet.ResourceManagement.WebService
                     }
                 }
 
-                Global.Client.SaveResource(resource);
-            }
-            catch (ResourceNotFoundException)
-            {
-                throw new WebFaultException(HttpStatusCode.NotFound);
+                Global.Client.SaveResource(resource, locale);
             }
             catch (WebFaultException)
             {
@@ -442,6 +573,10 @@ namespace Lithnet.ResourceManagement.WebService
             catch (WebFaultException<ExceptionData>)
             {
                 throw;
+            }
+            catch (ResourceNotFoundException)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.NotFound);
             }
             catch (ArgumentException ex)
             {
@@ -470,7 +605,7 @@ namespace Lithnet.ResourceManagement.WebService
         {
             try
             {
-                ApprovalStatus approvalStatus;
+                Client.ApprovalStatus approvalStatus;
 
                 if (Enum.TryParse(status, true, out approvalStatus))
                 {
@@ -561,7 +696,7 @@ namespace Lithnet.ResourceManagement.WebService
                 {
                     return new MemoryStream();
                 }
-                
+
                 IList<string> parameters = request.Attributes["RequestParameter"].StringValues;
                 List<RequestParameter> requestParameters = new List<RequestParameter>();
 
@@ -570,7 +705,7 @@ namespace Lithnet.ResourceManagement.WebService
                     requestParameters.Add(XmlDeserializeFromString<RequestParameter>(param));
                 }
 
-                WebOperationContext.Current.OutgoingResponse.ContentType ="application/json; charset=utf-8";
+                WebOperationContext.Current.OutgoingResponse.ContentType = "application/json; charset=utf-8";
 
                 return new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(requestParameters)));
             }
@@ -592,12 +727,12 @@ namespace Lithnet.ResourceManagement.WebService
             }
         }
 
-        public static T XmlDeserializeFromString<T>(string objectData)
+        internal static T XmlDeserializeFromString<T>(string objectData)
         {
             return (T)XmlDeserializeFromString(objectData, typeof(T));
         }
 
-        public static object XmlDeserializeFromString(string objectData, Type type)
+        internal static object XmlDeserializeFromString(string objectData, Type type)
         {
             var serializer = new XmlSerializer(type);
             object result;
