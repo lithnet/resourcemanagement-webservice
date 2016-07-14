@@ -45,14 +45,13 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Lithnet.ResourceManagement.Client, Version=1.0.6039.26740, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Lithnet.ResourceManagement.Client.1.0.6039.26740\lib\net40\Lithnet.ResourceManagement.Client.dll</HintPath>
+    <Reference Include="Lithnet.ResourceManagement.Client, Version=1.0.6039.27655, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Lithnet.ResourceManagement.Client.1.0.6039.27655\lib\net40\Lithnet.ResourceManagement.Client.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.ResourceManagement">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lithnetrmc\lib\Microsoft.ResourceManagement.dll</HintPath>
+      <HintPath>..\..\..\resourcemanagement-client\src\lib\Microsoft.ResourceManagement.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
