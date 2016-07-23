@@ -62,6 +62,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Net" />
+    <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.ServiceModel.Activation" />
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -75,6 +76,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Global.asax" />
+    <Content Include="ResourceManagementWebServicev2.svc" />
     <Content Include="ResourceManagementWebServicev1.svc" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
@@ -86,6 +88,11 @@
     <Compile Include="ExceptionData.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="IResourceManagementWebServicev2.cs" />
+    <Compile Include="PagedResultSet.cs" />
+    <Compile Include="ResourceManagementWebServicev2.svc.cs">
+      <DependentUpon>ResourceManagementWebServicev2.svc</DependentUpon>
     </Compile>
     <Compile Include="ResourceManagementWebServicev1.svc.cs">
       <DependentUpon>ResourceManagementWebServicev1.svc</DependentUpon>
