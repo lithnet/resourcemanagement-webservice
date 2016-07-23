@@ -1,18 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.ServiceModel.Web;
-using System.Text;
 using Lithnet.ResourceManagement.Client;
+using System.IO;
+using SwaggerWcf.Attributes;
 
 namespace Lithnet.ResourceManagement.WebService
 {
-    using System.IO;
-    using Microsoft.ResourceManagement.WebServices.WSResourceManagement;
-    using SwaggerWcf.Attributes;
-
     [ServiceContract]
     public interface IResourceManagementWebServicev1
     {
@@ -23,12 +18,12 @@ namespace Lithnet.ResourceManagement.WebService
 
         [SwaggerWcfPath("Get resource by key", "Get resources")]
         [OperationContract]
-        [WebGet(UriTemplate = "/resources/{objectType}/{key}/{keyValue}/", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
+        [WebGet(UriTemplate = "/resources/{objectType}/{key}/{keyValue}/?", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
         ResourceObject GetResourceByKey(string objectType, string key, string keyValue);
 
         [SwaggerWcfPath("Get resource by id", "Get resources")]
         [OperationContract]
-        [WebGet(UriTemplate = "/resources/{id}/", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
+        [WebGet(UriTemplate = "/resources/{id}/?", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
         ResourceObject GetResourceByID(string id);
 
         [SwaggerWcfPath("Delete resource", "Delete resource")]
@@ -43,7 +38,7 @@ namespace Lithnet.ResourceManagement.WebService
 
         [SwaggerWcfPath("Update resource", "Update resources")]
         [OperationContract]
-        [WebInvoke(UriTemplate = "/resources/{id}/", Method = "PUT", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
+        [WebInvoke(UriTemplate = "/resources/{id}/?", Method = "PUT", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
         void UpdateResource(string id, ResourceUpdateRequest request);
 
         [SwaggerWcfPath("Get approval requests", "Get approval requests")]
@@ -61,7 +56,7 @@ namespace Lithnet.ResourceManagement.WebService
         [WebInvoke(UriTemplate = "/approvals/{id}/{decision}", Method = "POST", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
         void SetPendingApproval(string id, string decision, ApprovalReason reason);
 
-        [SwaggerWcfPath("Get request parameters", "Get request parametters")]
+        [SwaggerWcfPath("Get request parameters", "Get request parameters")]
         [OperationContract]
         [WebGet(UriTemplate = "/request/{id}/parameters", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
         Stream GetRequestParameters(string id);

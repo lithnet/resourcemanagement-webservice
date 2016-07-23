@@ -11,7 +11,7 @@ namespace Lithnet.ResourceManagement.WebService
         {
             ExceptionData data = new ExceptionData(ex);
             data.CorrelationID = ex.CorrelationID;
-            
+
             return new WebFaultException<ExceptionData>(data, code);
         }
 
@@ -20,11 +20,23 @@ namespace Lithnet.ResourceManagement.WebService
             return WebExceptionHelper.CreateWebException(code, ex, null);
         }
 
+        public static Exception CreateWebException(HttpStatusCode code)
+        {
+            return WebExceptionHelper.CreateWebException(code, null, null);
+        }
+
         public static Exception CreateWebException(HttpStatusCode code, Exception ex, string details)
         {
-            ExceptionData data = new ExceptionData(ex);
-            data.Reason = details;
-            return new WebFaultException<ExceptionData>(data, code);
+            if (ex != null)
+            {
+                ExceptionData data = new ExceptionData(ex);
+                data.Reason = details;
+                return new WebFaultException<ExceptionData>(data, code);
+            }
+            else
+            {
+                return new WebFaultException(code);
+            }
         }
     }
 }
