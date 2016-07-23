@@ -70,6 +70,10 @@ namespace Lithnet.ResourceManagement.WebService
             {
                 throw;
             }
+            catch (ResourceManagementException ex)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
+            }
             catch (ArgumentException ex)
             {
                 throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
@@ -106,6 +110,10 @@ namespace Lithnet.ResourceManagement.WebService
             catch (WebFaultException<ExceptionData>)
             {
                 throw;
+            }
+            catch(ResourceManagementException ex)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
             }
             catch (ArgumentException ex)
             {
@@ -145,6 +153,10 @@ namespace Lithnet.ResourceManagement.WebService
             catch (WebFaultException<ExceptionData>)
             {
                 throw;
+            }
+            catch (ResourceManagementException ex)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
             }
             catch (ArgumentException ex)
             {
@@ -220,6 +232,10 @@ namespace Lithnet.ResourceManagement.WebService
             catch (WebFaultException<ExceptionData>)
             {
                 throw;
+            }
+            catch (ResourceManagementException ex)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
             }
             catch (ArgumentException ex)
             {
@@ -297,6 +313,10 @@ namespace Lithnet.ResourceManagement.WebService
             {
                 throw;
             }
+            catch (ResourceManagementException ex)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
+            }
             catch (ArgumentException ex)
             {
                 throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
@@ -330,6 +350,10 @@ namespace Lithnet.ResourceManagement.WebService
             catch (WebFaultException<ExceptionData>)
             {
                 throw;
+            }
+            catch (ResourceManagementException ex)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
             }
             catch (ArgumentException ex)
             {
@@ -392,6 +416,10 @@ namespace Lithnet.ResourceManagement.WebService
             {
                 throw;
             }
+            catch (ResourceManagementException ex)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
+            }
             catch (ArgumentException ex)
             {
                 throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
@@ -443,6 +471,10 @@ namespace Lithnet.ResourceManagement.WebService
             {
                 throw;
             }
+            catch (ResourceManagementException ex)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
+            }
             catch (ArgumentException ex)
             {
                 throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
@@ -487,6 +519,10 @@ namespace Lithnet.ResourceManagement.WebService
             {
                 throw;
             }
+            catch (ResourceManagementException ex)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
+            }
             catch (ArgumentException ex)
             {
                 throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
@@ -529,6 +565,10 @@ namespace Lithnet.ResourceManagement.WebService
             catch (WebFaultException<ExceptionData>)
             {
                 throw;
+            }
+            catch (ResourceManagementException ex)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
             }
             catch (ArgumentException ex)
             {
@@ -581,6 +621,10 @@ namespace Lithnet.ResourceManagement.WebService
             catch (WebFaultException<ExceptionData>)
             {
                 throw;
+            }
+            catch (ResourceManagementException ex)
+            {
+                throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
             }
             catch (ArgumentException ex)
             {

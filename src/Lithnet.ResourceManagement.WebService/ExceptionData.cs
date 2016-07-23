@@ -23,5 +23,8 @@ namespace Lithnet.ResourceManagement.WebService
 
         [DataMember]
         public string Reason { get; set; }
+
+        [DataMember(EmitDefaultValue = false)]
+        public string CorrelationID { get; set; }
     }
 }
