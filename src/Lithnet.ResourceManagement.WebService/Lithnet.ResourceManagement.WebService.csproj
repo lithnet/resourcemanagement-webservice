@@ -45,8 +45,8 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Lithnet.ResourceManagement.Client, Version=1.0.6034.20090, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Lithnet.ResourceManagement.Client.1.0.6034.20090\lib\net40\Lithnet.ResourceManagement.Client.dll</HintPath>
+    <Reference Include="Lithnet.ResourceManagement.Client, Version=1.0.6048.17046, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Lithnet.ResourceManagement.Client.1.0.6048.17046\lib\net40\Lithnet.ResourceManagement.Client.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
@@ -83,8 +83,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IResourceManagementWebServicev2.cs" />
-    <Compile Include="PagedResultSet.cs" />
     <Compile Include="ApprovalReason.cs" />
     <Compile Include="AttributeValueUpdate.cs" />
     <Compile Include="ExceptionData.cs" />

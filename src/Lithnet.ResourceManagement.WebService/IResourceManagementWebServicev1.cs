@@ -16,11 +16,6 @@ namespace Lithnet.ResourceManagement.WebService
         [WebGet(UriTemplate = "/resources/?", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
         IEnumerable<ResourceObject> GetResources();
 
-        [SwaggerWcfPath("Get resources (paged)", "Get resources")]
-        [OperationContract]
-        [WebGet(UriTemplate = "/resources/paged/?", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
-        PagedResultSet GetResourcesPaged();
-
         [SwaggerWcfPath("Get resource by key", "Get resources")]
         [OperationContract]
         [WebGet(UriTemplate = "/resources/{objectType}/{key}/{keyValue}/?", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
