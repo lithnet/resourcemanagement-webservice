@@ -6,16 +6,16 @@ using Lithnet.ResourceManagement.Client;
 using System.IO;
 using SwaggerWcf.Attributes;
 
-namespace Lithnet.ResourceManagement.WebService
+namespace Lithnet.ResourceManagement.WebService.v2
 {
     [ServiceContract]
-    public interface IResourceManagementWebServicev1
+    public interface IResourceManagementWebServicev2
     {
         [SwaggerWcfPath("Get resources", "Get resources")]
         [OperationContract]
         [WebGet(UriTemplate = "/resources/?", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
-        IEnumerable<ResourceObject> GetResources();
-
+        PagedResultSet GetResourcesPaged();
+        
         [SwaggerWcfPath("Get resource by key", "Get resources")]
         [OperationContract]
         [WebGet(UriTemplate = "/resources/{objectType}/{key}/{keyValue}/?", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
@@ -34,11 +34,11 @@ namespace Lithnet.ResourceManagement.WebService
         [SwaggerWcfPath("Create resource", "Create resource")]
         [OperationContract]
         [WebInvoke(UriTemplate = "/resources/", Method = "POST", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
-        string CreateResource(ResourceUpdateRequest resource);
+        ResourceObject CreateResource(ResourceUpdateRequest resource);
 
         [SwaggerWcfPath("Update resource", "Update resources")]
         [OperationContract]
-        [WebInvoke(UriTemplate = "/resources/{id}/?", Method = "PUT", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
+        [WebInvoke(UriTemplate = "/resources/{id}/?", Method = "PATCH", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
         void UpdateResource(string id, ResourceUpdateRequest request);
 
         [SwaggerWcfPath("Get approval requests", "Get approval requests")]
@@ -62,4 +62,3 @@ namespace Lithnet.ResourceManagement.WebService
         Stream GetRequestParameters(string id);
     }
 }
-

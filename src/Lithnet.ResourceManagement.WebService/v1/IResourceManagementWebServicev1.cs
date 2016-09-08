@@ -1,25 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ServiceModel;
 using System.ServiceModel.Web;
 using Lithnet.ResourceManagement.Client;
 using System.IO;
 using SwaggerWcf.Attributes;
 
-namespace Lithnet.ResourceManagement.WebService
+namespace Lithnet.ResourceManagement.WebService.v1
 {
     [ServiceContract]
-    public interface IResourceManagementWebServicev2
+    public interface IResourceManagementWebServicev1
     {
         [SwaggerWcfPath("Get resources", "Get resources")]
         [OperationContract]
         [WebGet(UriTemplate = "/resources/?", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
-        PagedResultSet GetResourcesPaged();
-
-        //[SwaggerWcfPath("Get resources (paged)", "Get resources")]
-        //[OperationContract]
-        //[WebGet(UriTemplate = "/resources/paged/?", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
-        //PagedResultSet GetResourcesPaged();
+        IEnumerable<ResourceObject> GetResources();
 
         [SwaggerWcfPath("Get resource by key", "Get resources")]
         [OperationContract]
@@ -67,3 +61,4 @@ namespace Lithnet.ResourceManagement.WebService
         Stream GetRequestParameters(string id);
     }
 }
+
