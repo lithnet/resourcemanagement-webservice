@@ -383,6 +383,10 @@ namespace Lithnet.ResourceManagement.WebService
             {
                 throw WebExceptionHelper.CreateWebException(HttpStatusCode.NotFound);
             }
+            catch (AuthorizationRequiredException ex)
+            {
+                throw WebExceptionHelper.CreateWebException(ex);
+            }
             catch (ResourceManagementException ex)
             {
                 throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
@@ -448,6 +452,10 @@ namespace Lithnet.ResourceManagement.WebService
             {
                 throw;
             }
+            catch (AuthorizationRequiredException ex)
+            {
+                throw WebExceptionHelper.CreateWebException(ex);
+            }
             catch (ResourceManagementException ex)
             {
                 throw WebExceptionHelper.CreateWebException(HttpStatusCode.BadRequest, ex);
@@ -499,6 +507,10 @@ namespace Lithnet.ResourceManagement.WebService
             catch (WebFaultException<ExceptionData>)
             {
                 throw;
+            }
+            catch (AuthorizationRequiredException ex)
+            {
+                throw WebExceptionHelper.CreateWebException(ex);
             }
             catch (ResourceNotFoundException)
             {
@@ -598,6 +610,10 @@ namespace Lithnet.ResourceManagement.WebService
             catch (WebFaultException<ExceptionData>)
             {
                 throw;
+            }
+            catch (AuthorizationRequiredException ex)
+            {
+                throw WebExceptionHelper.CreateWebException(ex);
             }
             catch (ResourceManagementException ex)
             {

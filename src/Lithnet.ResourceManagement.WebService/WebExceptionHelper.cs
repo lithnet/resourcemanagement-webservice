@@ -9,10 +9,16 @@ namespace Lithnet.ResourceManagement.WebService
     {
         public static Exception CreateWebException(HttpStatusCode code, ResourceManagementException ex)
         {
-            ExceptionData data = new ExceptionData(ex);
-            data.CorrelationID = ex.CorrelationID;
+            ExceptionData data = new ExceptionData(ex) { CorrelationID = ex.CorrelationID };
 
             return new WebFaultException<ExceptionData>(data, code);
+        }
+
+        public static Exception CreateWebException(AuthorizationRequiredException ex)
+        {
+            PendingAuthorizationData data = new PendingAuthorizationData(ex);
+
+            return new WebFaultException<PendingAuthorizationData>(data, HttpStatusCode.Accepted);
         }
 
         public static Exception CreateWebException(HttpStatusCode code, Exception ex)
@@ -29,8 +35,8 @@ namespace Lithnet.ResourceManagement.WebService
         {
             if (ex != null)
             {
-                ExceptionData data = new ExceptionData(ex);
-                data.Reason = details;
+                ExceptionData data = new ExceptionData(ex) { Reason = details };
+
                 return new WebFaultException<ExceptionData>(data, code);
             }
             else
