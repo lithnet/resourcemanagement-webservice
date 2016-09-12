@@ -1,4 +1,5 @@
-### Description
+![](https://lithnet.github.io/images/logo-ex-small.png)
+# REST API for FIM/MIM Service
 The Lithnet FIM/MIM Service REST API is a wrapper for the FIM/MIM Service's SOAP/WCF endpoint, exposing create, update, delete and search functionality via a series of standard HTTP calls. The API returns JSON-formatted data, making it compatible with a wide range of platforms and services
 
 ### Guides
