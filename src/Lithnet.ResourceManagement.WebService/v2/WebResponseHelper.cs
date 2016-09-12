@@ -43,14 +43,14 @@ namespace Lithnet.ResourceManagement.WebService.v2
 
         public static bool RequestNoBody()
         {
-            string x = WebOperationContext.Current.IncomingRequest.Headers["Prefer"];
+            string x = WebOperationContext.Current?.IncomingRequest.Headers["Prefer"];
 
             if (x == "return=minimal")
             {
                 return true;
             }
 
-            string y = WebOperationContext.Current.IncomingRequest.UriTemplateMatch.QueryParameters["return"];
+            string y = WebOperationContext.Current?.IncomingRequest.UriTemplateMatch.QueryParameters["return"];
 
             if (y == "minimal")
             {

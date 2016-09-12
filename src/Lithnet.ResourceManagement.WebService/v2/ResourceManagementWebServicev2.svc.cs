@@ -29,9 +29,9 @@ namespace Lithnet.ResourceManagement.WebService.v2
         private static MemoryCache searchCache = new MemoryCache("seach-results");
 
         [SwaggerWcfTag("Resources")]
-        [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
-        [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
-        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
+        [SwaggerWcfResponse(HttpStatusCode.OK, "Results found")]
+        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request")]
+        [SwaggerWcfResponse(HttpStatusCode.InternalServerError, "Internal error")]
         public PagedResultSet GetResourcesPaged()
         {
             try
@@ -96,9 +96,10 @@ namespace Lithnet.ResourceManagement.WebService.v2
         }
 
         [SwaggerWcfTag("Resources")]
-        [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
         [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
-        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
+        [SwaggerWcfResponse(HttpStatusCode.OK, "Results found")]
+        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request")]
+        [SwaggerWcfResponse(HttpStatusCode.InternalServerError, "Internal error")]
         public ResourceObject GetResourceByKey(string objectType, string key, string keyValue)
         {
             try
@@ -132,9 +133,10 @@ namespace Lithnet.ResourceManagement.WebService.v2
         }
 
         [SwaggerWcfTag("Resources")]
-        [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
         [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
-        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
+        [SwaggerWcfResponse(HttpStatusCode.OK, "Results found")]
+        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request")]
+        [SwaggerWcfResponse(HttpStatusCode.InternalServerError, "Internal error")]
         public ResourceObject GetResourceByID(string id)
         {
             try
@@ -167,9 +169,10 @@ namespace Lithnet.ResourceManagement.WebService.v2
         }
 
         [SwaggerWcfTag("Resources")]
-        [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
         [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
-        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
+        [SwaggerWcfResponse(HttpStatusCode.OK, "Results found")]
+        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request")]
+        [SwaggerWcfResponse(HttpStatusCode.InternalServerError, "Internal error")]
         public KeyValuePair<string, string[]>? GetResourceAttributeByID(string id, string attribute)
         {
             try
@@ -240,9 +243,10 @@ namespace Lithnet.ResourceManagement.WebService.v2
         }
 
         [SwaggerWcfTag("Resources")]
-        [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
         [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
-        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
+        [SwaggerWcfResponse(HttpStatusCode.OK, "Results found")]
+        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request")]
+        [SwaggerWcfResponse(HttpStatusCode.InternalServerError, "Internal error")]
         public KeyValuePair<string, string[]>? GetResourceAttributeByKey(string objectType, string key, string keyValue, string attribute)
         {
             try
@@ -314,9 +318,11 @@ namespace Lithnet.ResourceManagement.WebService.v2
         }
 
         [SwaggerWcfTag("Resources")]
-        [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
         [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
-        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
+        [SwaggerWcfResponse(HttpStatusCode.OK, "Results found")]
+        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request")]
+        [SwaggerWcfResponse(HttpStatusCode.InternalServerError, "Internal error")]
+        [SwaggerWcfResponse(HttpStatusCode.Accepted, "Pending approval")]
         public void DeleteResourceByID(string id)
         {
             try
@@ -342,7 +348,9 @@ namespace Lithnet.ResourceManagement.WebService.v2
 
         [SwaggerWcfTag("Resources")]
         [SwaggerWcfResponse(HttpStatusCode.Created, "Created")]
-        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
+        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request")]
+        [SwaggerWcfResponse(HttpStatusCode.InternalServerError, "Internal error")]
+        [SwaggerWcfResponse(HttpStatusCode.Accepted, "Pending approval")]
         public ResourceObject CreateResource(ResourceUpdateRequest request)
         {
             try
@@ -380,14 +388,22 @@ namespace Lithnet.ResourceManagement.WebService.v2
                 }
 
                 Global.Client.SaveResource(resource);
-
+                
                 string bareID = resource.ObjectID.ToString().Replace("urn:uuid:", string.Empty);
 
                 Uri url = new Uri(WebOperationContext.Current.IncomingRequest.UriTemplateMatch.RequestUri, bareID);
                 WebOperationContext.Current.OutgoingResponse.Headers.Add(HttpResponseHeader.Location, url.ToString());
                 WebOperationContext.Current.OutgoingResponse.StatusCode = HttpStatusCode.Created;
 
-                return WebResponseHelper.RequestNoBody() ? null : resource;
+                if (WebResponseHelper.RequestNoBody())
+                {
+                    return null;
+                }
+                else
+                {
+                    resource.Refresh();
+                    return resource;
+                }
             }
             catch (WebFaultException)
             {
@@ -407,7 +423,9 @@ namespace Lithnet.ResourceManagement.WebService.v2
         [SwaggerWcfTag("Resources")]
         [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
         [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
-        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
+        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request")]
+        [SwaggerWcfResponse(HttpStatusCode.InternalServerError, "Internal error")]
+        [SwaggerWcfResponse(HttpStatusCode.Accepted, "Pending approval")]
         public void UpdateResource(string id, ResourceUpdateRequest request)
         {
             try
@@ -464,6 +482,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
         [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
         [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
         [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
+        [SwaggerWcfResponse(HttpStatusCode.InternalServerError, "Internal error")]
         public IEnumerable<ResourceObject> GetApprovalRequests()
         {
             return this.GetApprovalRequestsByStatus("Unknown");
@@ -473,6 +492,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
         [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
         [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
         [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
+        [SwaggerWcfResponse(HttpStatusCode.InternalServerError, "Internal error")]
         public IEnumerable<ResourceObject> GetApprovalRequestsByStatus(string status)
         {
             try
@@ -505,6 +525,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
         [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
         [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
         [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
+        [SwaggerWcfResponse(HttpStatusCode.InternalServerError, "Internal error")]
         public void SetPendingApproval(string id, string decision, ApprovalReason reason)
         {
             try
@@ -545,6 +566,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
         [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
         [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
         [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
+        [SwaggerWcfResponse(HttpStatusCode.InternalServerError, "Internal error")]
         public Stream GetRequestParameters(string id)
         {
             try
