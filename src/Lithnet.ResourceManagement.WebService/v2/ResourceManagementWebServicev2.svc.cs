@@ -36,48 +36,21 @@ namespace Lithnet.ResourceManagement.WebService.v2
         {
             try
             {
-                string pageSizeParam = WebOperationContext.Current?.IncomingRequest.UriTemplateMatch.QueryParameters["pageSize"];
-                string currentIndexParam = WebOperationContext.Current?.IncomingRequest.UriTemplateMatch.QueryParameters["index"];
-                string token = WebOperationContext.Current?.IncomingRequest.UriTemplateMatch.QueryParameters["token"];
+                IncomingWebRequestContext context = WebOperationContext.Current?.IncomingRequest;
+                if (context == null)
+                {
+                    throw new InvalidOperationException();
+                }
 
-                int pageSize = ResourceManagementWebServicev2.GetPageSize(pageSizeParam);
+                string currentIndexParam = context.UriTemplateMatch.QueryParameters["index"];
+                string token = context.UriTemplateMatch.QueryParameters["token"];
+
+                int pageSize = ResourceManagementWebServicev2.GetPageSize(context);
                 int index = currentIndexParam == null ? -1 : Convert.ToInt32(currentIndexParam);
 
-                SearchResultPager p;
+                SearchResultPager p = ResourceManagementWebServicev2.GetSearchResultPager(context, pageSize, token);
 
-                if (token == null)
-                {
-                    string attributes = WebOperationContext.Current?.IncomingRequest.UriTemplateMatch.QueryParameters["attributes"];
-                    string objectType = WebOperationContext.Current?.IncomingRequest.UriTemplateMatch.QueryParameters["objectType"];
-                    string filter = WebOperationContext.Current?.IncomingRequest.UriTemplateMatch.QueryParameters["filter"];
-
-                    filter = ResourceManagementWebServicev2.GetFilterText(filter, objectType);
-                    CultureInfo locale = GetLocaleFromParameters();
-
-                    if (attributes != null)
-                    {
-                        p = Global.Client.GetResourcesPaged(filter, pageSize, attributes.Split(','), locale);
-                    }
-                    else if (objectType != null)
-                    {
-                        p = Global.Client.GetResourcesPaged(filter, pageSize, ResourceManagementSchema.ObjectTypes[objectType].Attributes.Select(t => t.SystemName), locale);
-                    }
-                    else
-                    {
-                        p = Global.Client.GetResourcesPaged(filter, pageSize, locale);
-                    }
-
-                    token = Guid.NewGuid().ToString();
-                }
-                else
-                {
-                    p = (SearchResultPager)ResourceManagementWebServicev2.searchCache.Remove(ResourceManagementWebServicev2.BuildCacheKey(token));
-
-                    if (p == null)
-                    {
-                        throw new ArgumentException("Invalid token");
-                    }
-                }
+                token = token ?? Guid.NewGuid().ToString();
 
                 if (index >= 0)
                 {
@@ -88,29 +61,20 @@ namespace Lithnet.ResourceManagement.WebService.v2
 
                 int oldIndex = p.CurrentIndex;
 
-                PagedResultSet results = new PagedResultSet();
-
-                results.Results = p.GetNextPage().ToList();
-                results.HasMoreItems = p.CurrentIndex  < p.TotalCount;
-
-                Uri basePageUri = new Uri(WebOperationContext.Current.IncomingRequest.UriTemplateMatch.RequestUri.AbsoluteUri);
-
-                Uri nextPageUri = null;
-                Uri previousPageUri = null;
-
-                if ((oldIndex - pageSize) >= 0)
+                PagedResultSet results = new PagedResultSet
                 {
-                    previousPageUri = new Uri(basePageUri, $"?token={token}pageSize={pageSize}&index={oldIndex - pageSize}");
-                }
+                    Results = p.GetNextPage().ToList(),
+                };
 
-                if (results.HasMoreItems)
-                {
-                    nextPageUri = new Uri(basePageUri, $"?token={token}&pageSize={pageSize}");
-                }
+                Uri nextPageUri;
+                Uri previousPageUri;
+
+                ResourceManagementWebServicev2.GetPageUris(context, oldIndex, pageSize, token, p, out previousPageUri, out nextPageUri);
 
                 results.NextPage = nextPageUri?.ToString();
                 results.PreviousPage = previousPageUri?.ToString();
                 results.TotalCount = p.TotalCount;
+                results.HasMoreItems = results.NextPage != null;
 
                 ResourceManagementWebServicev2.searchCache.Add(ResourceManagementWebServicev2.BuildCacheKey(token), p, new CacheItemPolicy() { SlidingExpiration = new TimeSpan(0, 5, 0) });
 
@@ -127,43 +91,8 @@ namespace Lithnet.ResourceManagement.WebService.v2
             catch (Exception ex)
             {
                 ResourceManagementWebServicev2.HandleException(ex);
-                return null;
+                throw;
             }
-        }
-
-        private static string GetFilterText(string filter, string objectType)
-        {
-            if (filter == null)
-            {
-                if (objectType == null)
-                {
-                    filter = "/*";
-                }
-                else
-                {
-                    filter = $"/{objectType}";
-                }
-            }
-            return filter;
-        }
-
-        private static int GetPageSize(string pageSizeParam)
-        {
-            int pageSize;
-
-            if (pageSizeParam == null)
-            {
-                pageSize = 100;
-            }
-            else
-            {
-                pageSize = Convert.ToInt32(pageSizeParam);
-            }
-            if (pageSize <= 0)
-            {
-                throw new ArgumentException("Page size must be greater than zero");
-            }
-            return pageSize;
         }
 
         [SwaggerWcfTag("Resources")]
@@ -198,7 +127,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
             catch (Exception ex)
             {
                 ResourceManagementWebServicev2.HandleException(ex);
-                return null;
+                throw;
             }
         }
 
@@ -233,7 +162,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
             catch (Exception ex)
             {
                 ResourceManagementWebServicev2.HandleException(ex);
-                return null;
+                throw;
             }
         }
 
@@ -306,7 +235,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
             catch (Exception ex)
             {
                 ResourceManagementWebServicev2.HandleException(ex);
-                return null;
+                throw;
             }
         }
 
@@ -380,7 +309,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
             catch (Exception ex)
             {
                 ResourceManagementWebServicev2.HandleException(ex);
-                return null;
+                throw;
             }
         }
 
@@ -407,6 +336,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
             catch (Exception ex)
             {
                 ResourceManagementWebServicev2.HandleException(ex);
+                throw;
             }
         }
 
@@ -470,7 +400,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
             catch (Exception ex)
             {
                 ResourceManagementWebServicev2.HandleException(ex);
-                return null;
+                throw;
             }
         }
 
@@ -567,7 +497,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
             catch (Exception ex)
             {
                 ResourceManagementWebServicev2.HandleException(ex);
-                return null;
+                throw;
             }
         }
 
@@ -607,6 +537,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
             catch (Exception ex)
             {
                 ResourceManagementWebServicev2.HandleException(ex);
+                throw;
             }
         }
 
@@ -655,7 +586,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
             catch (Exception ex)
             {
                 ResourceManagementWebServicev2.HandleException(ex);
-                return null;
+                throw;
             }
         }
 
@@ -724,13 +655,124 @@ namespace Lithnet.ResourceManagement.WebService.v2
         private static CultureInfo GetLocaleFromParameters()
         {
             string locale = WebOperationContext.Current?.IncomingRequest.UriTemplateMatch.QueryParameters["locale"];
-            CultureInfo culture = null;
-            if (locale != null)
+
+            return locale != null ? new CultureInfo(locale) : null;
+        }
+
+        private static void GetPageUris(IncomingWebRequestContext context, int oldIndex, int pageSize, string token, SearchResultPager pager, out Uri previousPageUri, out Uri nextPageUri)
+        {
+            Uri basePageUri = new Uri(context.UriTemplateMatch.RequestUri.AbsoluteUri);
+
+            if ((oldIndex - pageSize) >= 0)
             {
-                culture = new CultureInfo(locale);
+                previousPageUri = new Uri(basePageUri, $"?token={token}pageSize={pageSize}&index={oldIndex - pageSize}");
+            }
+            else
+            {
+                previousPageUri = null;
             }
 
-            return culture;
+            if (oldIndex + pageSize - 1 < pager.TotalCount)
+            {
+                nextPageUri = new Uri(basePageUri, $"?token={token}&pageSize={pageSize}&index={oldIndex + pageSize}");
+            }
+            else
+            {
+                nextPageUri = null;
+            }
         }
+
+        private static SearchResultPager GetSearchResultPager(IncomingWebRequestContext context, int pageSize, string token)
+        {
+            SearchResultPager p;
+
+            if (token == null)
+            {
+                string filter = ResourceManagementWebServicev2.GetFilterText(context);
+                CultureInfo locale = ResourceManagementWebServicev2.GetLocaleFromParameters();
+                IEnumerable<string> attributes = ResourceManagementWebServicev2.GetAttributes(context);
+
+                if (attributes != null)
+                {
+                    p = Global.Client.GetResourcesPaged(filter, pageSize, attributes, locale);
+                }
+                else
+                {
+                    p = Global.Client.GetResourcesPaged(filter, pageSize, locale);
+                }
+            }
+            else
+            {
+                p = (SearchResultPager)ResourceManagementWebServicev2.searchCache.Remove(ResourceManagementWebServicev2.BuildCacheKey(token));
+
+                if (p == null)
+                {
+                    throw new ArgumentException("Invalid token");
+                }
+            }
+            return p;
+        }
+
+        private static IEnumerable<string> GetAttributes(IncomingWebRequestContext context)
+        {
+            string attributes = context.UriTemplateMatch.QueryParameters["attributes"];
+            string objectType = context.UriTemplateMatch.QueryParameters["objectType"];
+
+            if (attributes != null)
+            {
+                return attributes.Split(',');
+            }
+
+            if (objectType != null)
+            {
+                return ResourceManagementSchema.ObjectTypes[objectType].Attributes.Select(t => t.SystemName);
+            }
+
+            return null;
+        }
+
+        private static string GetFilterText(IncomingWebRequestContext context)
+        {
+            string filter = context.UriTemplateMatch.QueryParameters["filter"];
+            string objectType = context.UriTemplateMatch.QueryParameters["objectType"];
+
+            if (filter != null)
+            {
+                return filter;
+            }
+
+            if (objectType == null)
+            {
+                filter = "/*";
+            }
+            else
+            {
+                filter = $"/{objectType}";
+            }
+
+            return filter;
+        }
+
+        private static int GetPageSize(IncomingWebRequestContext context)
+        {
+            string pageSizeParam = context.UriTemplateMatch.QueryParameters["pageSize"];
+
+            int pageSize;
+
+            if (pageSizeParam == null)
+            {
+                pageSize = 100;
+            }
+            else
+            {
+                pageSize = Convert.ToInt32(pageSizeParam);
+            }
+            if (pageSize <= 0)
+            {
+                throw new ArgumentException("Page size must be greater than zero");
+            }
+            return pageSize;
+        }
+
     }
 }
