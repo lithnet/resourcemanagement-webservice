@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ServiceModel;
 using System.ServiceModel.Web;
 using Lithnet.ResourceManagement.Client;
 using System.IO;
 using SwaggerWcf.Attributes;
 
-namespace Lithnet.ResourceManagement.WebService
+namespace Lithnet.ResourceManagement.WebService.v1
 {
     [ServiceContract]
     public interface IResourceManagementWebServicev1

@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Runtime.Serialization;
 
-namespace Lithnet.ResourceManagement.WebService
+namespace Lithnet.ResourceManagement.WebService.v1
 {
     [DataContract]
     public class ExceptionData

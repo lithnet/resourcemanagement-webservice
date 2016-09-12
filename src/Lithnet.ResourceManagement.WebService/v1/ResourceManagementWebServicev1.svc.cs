@@ -15,7 +15,7 @@ using System.ServiceModel.Web;
 using System.Text;
 using System.Xml.Serialization;
 
-namespace Lithnet.ResourceManagement.WebService
+namespace Lithnet.ResourceManagement.WebService.v1
 {
     [SwaggerWcf("/v1")]
     [AspNetCompatibilityRequirements(RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed)]

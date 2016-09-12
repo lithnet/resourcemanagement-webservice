@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Runtime.Serialization;
-using Lithnet.ResourceManagement.Client;
-using Microsoft.ResourceManagement.WebServices.IdentityManagementOperation;
-
-namespace Lithnet.ResourceManagement.WebService
+﻿namespace Lithnet.ResourceManagement.WebService
 {
     public class AttributeValueUpdate
     {

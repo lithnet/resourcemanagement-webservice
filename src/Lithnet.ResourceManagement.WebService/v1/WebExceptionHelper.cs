@@ -3,7 +3,7 @@ using System.Net;
 using System.ServiceModel.Web;
 using Lithnet.ResourceManagement.Client;
 
-namespace Lithnet.ResourceManagement.WebService
+namespace Lithnet.ResourceManagement.WebService.v1
 {
     public static class WebExceptionHelper
     {
