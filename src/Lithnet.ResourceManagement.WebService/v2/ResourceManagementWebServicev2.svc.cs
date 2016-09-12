@@ -687,7 +687,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
 
             if ((oldIndex - pageSize) >= 0)
             {
-                previousPageUri = new Uri(basePageUri, $"?token={token}pageSize={pageSize}&index={oldIndex - pageSize}");
+                previousPageUri = new Uri(basePageUri, $"?token={token}&pageSize={pageSize}&index={oldIndex - pageSize}");
             }
             else
             {
