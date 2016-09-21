@@ -416,7 +416,7 @@ namespace Lithnet.ResourceManagement.WebService.v1
                     throw new ArgumentException("An object type must be specified");
                 }
 
-                string objectType = objectTypeUpdate.Value?[0];
+                string objectType = objectTypeUpdate.Value?[0] as string;
 
                 if (objectType == null)
                 {

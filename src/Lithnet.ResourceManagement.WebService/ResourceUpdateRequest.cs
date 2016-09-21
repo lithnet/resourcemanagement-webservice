@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 namespace Lithnet.ResourceManagement.WebService
 {
     [Serializable]
-        public class ResourceUpdateRequest : ISerializable
+    public class ResourceUpdateRequest : ISerializable
     {
         public List<AttributeValueUpdate> Attributes { get; set; }
 
@@ -25,7 +25,7 @@ namespace Lithnet.ResourceManagement.WebService
                 }
                 else if (update.Value.Length > 1)
                 {
-                    info.AddValue(update.Name, update.Value, typeof(string[]));
+                    info.AddValue(update.Name, update.Value, typeof(object[]));
                 }
                 else if (update.Value.Length == 1)
                 {
@@ -44,7 +44,7 @@ namespace Lithnet.ResourceManagement.WebService
 
             foreach (SerializationEntry entry in info)
             {
-                string[] entryValues = entry.Value as string[];
+                object[] entryValues = entry.Value as object[];
 
                 if (entryValues != null)
                 {
