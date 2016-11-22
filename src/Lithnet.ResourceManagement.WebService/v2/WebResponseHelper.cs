@@ -34,6 +34,13 @@ namespace Lithnet.ResourceManagement.WebService.v2
             throw new WebFaultException<Error>(new Error(e), HttpStatusCode.BadRequest);
         }
 
+        public static void ThrowPermissionDeniedException(PermissionDeniedException ex)
+        {
+            ErrorData e = new v2.ErrorData(ex, "permission-denied");
+
+            throw new WebFaultException<Error>(new Error(e), HttpStatusCode.Forbidden);
+        }
+
         public static void ThrowResourceManagementException(ResourceManagementException ex)
         {
             ErrorData e = new v2.ErrorData(ex, "resource-management-exception");

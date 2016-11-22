@@ -648,10 +648,15 @@ namespace Lithnet.ResourceManagement.WebService.v2
             }
 
             AuthorizationRequiredException exception = ex as AuthorizationRequiredException;
-
             if (exception != null)
             {
                 WebResponseHelper.ThrowAuthorizationRequired(exception);
+            }
+
+            PermissionDeniedException  permissionDeniedException = ex as PermissionDeniedException;
+            if (permissionDeniedException != null)
+            {
+                WebResponseHelper.ThrowPermissionDeniedException(permissionDeniedException);
             }
 
             ArgumentException argumentException = ex as ArgumentException;
