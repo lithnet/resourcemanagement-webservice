@@ -29,7 +29,7 @@ namespace Lithnet.ResourceManagement.WebService
                 }
                 else if (update.Value.Length == 1)
                 {
-                    info.AddValue(update.Name, update.Value.First(), typeof(string));
+                    info.AddValue(update.Name, update.Value.First(), typeof(object));
                 }
                 else
                 {
@@ -52,14 +52,7 @@ namespace Lithnet.ResourceManagement.WebService
                     continue;
                 }
 
-                string entryValue = entry.Value as string;
-
-                if (entryValue == null)
-                {
-                    continue;
-                }
-
-                this.Attributes.Add(new AttributeValueUpdate(entry.Name, entryValue));
+                this.Attributes.Add(new AttributeValueUpdate(entry.Name, entry.Value));
             }
         }
     }

@@ -18,7 +18,7 @@ namespace Lithnet.ResourceManagement.WebService
             this.Value = values;
         }
      
-        public AttributeValueUpdate(string attributeName, string value)
+        public AttributeValueUpdate(string attributeName, object value)
         {
             this.Name = attributeName;
             this.Value = new object[1] { value };
