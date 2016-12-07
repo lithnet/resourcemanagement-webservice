@@ -16,6 +16,7 @@ using System.Text;
 using System.Xml.Serialization;
 using System.Runtime.Caching;
 using System.Security.Principal;
+using System.ServiceModel;
 using System.Web;
 
 namespace Lithnet.ResourceManagement.WebService.v2
@@ -388,7 +389,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
                 }
 
                 Global.Client.SaveResource(resource);
-                
+
                 string bareID = resource.ObjectID.ToString().Replace("urn:uuid:", string.Empty);
 
                 Uri url = new Uri(WebOperationContext.Current.IncomingRequest.UriTemplateMatch.RequestUri, bareID);
@@ -460,21 +461,10 @@ namespace Lithnet.ResourceManagement.WebService.v2
             {
                 throw;
             }
-            catch (AuthorizationRequiredException ex)
-            {
-                WebResponseHelper.ThrowAuthorizationRequired(ex);
-            }
-            catch (ResourceNotFoundException)
-            {
-                WebResponseHelper.ThrowNotFoundException();
-            }
-            catch (ArgumentException ex)
-            {
-                WebResponseHelper.ThrowArgumentException(ex);
-            }
             catch (Exception ex)
             {
-                WebResponseHelper.ThrowServerException(ex);
+                ResourceManagementWebServicev2.HandleException(ex);
+                throw;
             }
         }
 
@@ -653,7 +643,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
                 WebResponseHelper.ThrowAuthorizationRequired(exception);
             }
 
-            PermissionDeniedException  permissionDeniedException = ex as PermissionDeniedException;
+            PermissionDeniedException permissionDeniedException = ex as PermissionDeniedException;
             if (permissionDeniedException != null)
             {
                 WebResponseHelper.ThrowPermissionDeniedException(permissionDeniedException);
@@ -688,11 +678,11 @@ namespace Lithnet.ResourceManagement.WebService.v2
 
         private static void GetPageUris(IncomingWebRequestContext context, int oldIndex, int pageSize, string token, SearchResultPager pager, out Uri previousPageUri, out Uri nextPageUri)
         {
-            Uri basePageUri = new Uri(context.UriTemplateMatch.RequestUri.AbsoluteUri);
+            string basePageUri = context.UriTemplateMatch.BaseUri.OriginalString.TrimEnd('/');
 
             if ((oldIndex - pageSize) >= 0)
             {
-                previousPageUri = new Uri(basePageUri, $"?token={token}&pageSize={pageSize}&index={oldIndex - pageSize}");
+                previousPageUri = new Uri(basePageUri + $"/resources/?token={token}&pageSize={pageSize}&index={oldIndex - pageSize}");
             }
             else
             {
@@ -701,7 +691,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
 
             if (oldIndex + pageSize - 1 < pager.TotalCount)
             {
-                nextPageUri = new Uri(basePageUri, $"?token={token}&pageSize={pageSize}&index={oldIndex + pageSize}");
+                nextPageUri = new Uri(basePageUri + $"/resources/?token={token}&pageSize={pageSize}&index={oldIndex + pageSize}");
             }
             else
             {
