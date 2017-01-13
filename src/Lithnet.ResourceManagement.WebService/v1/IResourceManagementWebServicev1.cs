@@ -13,17 +13,17 @@ namespace Lithnet.ResourceManagement.WebService.v1
         [SwaggerWcfPath("Get resources", "Get resources")]
         [OperationContract]
         [WebGet(UriTemplate = "/resources/?", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
-        IEnumerable<ResourceObject> GetResources();
+        Stream GetResources();
 
         [SwaggerWcfPath("Get resource by key", "Get resources")]
         [OperationContract]
         [WebGet(UriTemplate = "/resources/{objectType}/{key}/{keyValue}/?", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
-        ResourceObject GetResourceByKey(string objectType, string key, string keyValue);
+        Stream GetResourceByKey(string objectType, string key, string keyValue);
 
         [SwaggerWcfPath("Get resource by id", "Get resources")]
         [OperationContract]
         [WebGet(UriTemplate = "/resources/{id}/?", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
-        ResourceObject GetResourceByID(string id);
+        Stream GetResourceByID(string id);
 
         [SwaggerWcfPath("Delete resource", "Delete resource")]
         [OperationContract]
@@ -43,12 +43,12 @@ namespace Lithnet.ResourceManagement.WebService.v1
         [SwaggerWcfPath("Get approval requests", "Get approval requests")]
         [OperationContract]
         [WebGet(UriTemplate = "/approvals/", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
-        IEnumerable<ResourceObject> GetApprovalRequests();
+        Stream GetApprovalRequests();
 
         [SwaggerWcfPath("Get approval requests", "Get approval requests")]
         [OperationContract]
         [WebGet(UriTemplate = "/approvals/{status}", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
-        IEnumerable<ResourceObject> GetApprovalRequestsByStatus(string status);
+        Stream GetApprovalRequestsByStatus(string status);
 
         [SwaggerWcfPath("Approve request", "Approve request")]
         [OperationContract]

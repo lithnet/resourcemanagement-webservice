@@ -27,7 +27,7 @@ namespace Lithnet.ResourceManagement.WebService.v1
         [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
         [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
         [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
-        public IEnumerable<ResourceObject> GetResources()
+        public Stream GetResources()
         {
             try
             {
@@ -50,16 +50,16 @@ namespace Lithnet.ResourceManagement.WebService.v1
 
                 if (attributes != null)
                 {
-                    return Global.Client.GetResources(filter, attributes.Split(','), locale).ToList();
+                    return ResourceManagementWebServicev1.GetResponse(Global.Client.GetResources(filter, attributes.Split(','), locale).ToList());
                 }
 
                 if (objectType != null)
                 {
-                    return Global.Client.GetResources(filter, ResourceManagementSchema.ObjectTypes[objectType].Attributes.Select(t => t.SystemName), locale).ToList();
+                    return ResourceManagementWebServicev1.GetResponse(Global.Client.GetResources(filter, ResourceManagementSchema.ObjectTypes[objectType].Attributes.Select(t => t.SystemName), locale).ToList());
                 }
                 else
                 {
-                    return Global.Client.GetResources(filter, locale).ToList();
+                    return ResourceManagementWebServicev1.GetResponse(Global.Client.GetResources(filter, locale).ToList());
                 }
             }
             catch (WebFaultException)
@@ -100,7 +100,7 @@ namespace Lithnet.ResourceManagement.WebService.v1
         [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
         [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
         [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
-        public ResourceObject GetResourceByKey(string objectType, string key, string keyValue)
+        public Stream GetResourceByKey(string objectType, string key, string keyValue)
         {
             ResourceObject resource;
             try
@@ -141,14 +141,14 @@ namespace Lithnet.ResourceManagement.WebService.v1
                 throw WebExceptionHelper.CreateWebException(HttpStatusCode.InternalServerError, ex);
             }
 
-            return resource;
+            return ResourceManagementWebServicev1.GetResponse(resource);
         }
 
         [SwaggerWcfTag("Resources")]
         [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
         [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
         [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
-        public ResourceObject GetResourceByID(string id)
+        public Stream GetResourceByID(string id)
         {
             try
             {
@@ -162,7 +162,7 @@ namespace Lithnet.ResourceManagement.WebService.v1
                     throw new ResourceNotFoundException();
                 }
 
-                return resource;
+                return ResourceManagementWebServicev1.GetResponse(resource);
             }
             catch (WebFaultException)
             {
@@ -534,7 +534,7 @@ namespace Lithnet.ResourceManagement.WebService.v1
         [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
         [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
         [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
-        public IEnumerable<ResourceObject> GetApprovalRequests()
+        public Stream GetApprovalRequests()
         {
             return this.GetApprovalRequestsByStatus("Unknown");
         }
@@ -543,7 +543,7 @@ namespace Lithnet.ResourceManagement.WebService.v1
         [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
         [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
         [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
-        public IEnumerable<ResourceObject> GetApprovalRequestsByStatus(string status)
+        public Stream GetApprovalRequestsByStatus(string status)
         {
             try
             {
@@ -551,7 +551,7 @@ namespace Lithnet.ResourceManagement.WebService.v1
 
                 if (Enum.TryParse(status, true, out approvalStatus))
                 {
-                    return Global.Client.GetApprovals(approvalStatus).ToList();
+                    return ResourceManagementWebServicev1.GetResponse(Global.Client.GetApprovals(approvalStatus).ToList());
                 }
 
                 throw new ArgumentException("Invalid value for status parameter");
@@ -588,7 +588,7 @@ namespace Lithnet.ResourceManagement.WebService.v1
             {
                 ResourceManagementWebServicev1.ValidateID(id);
 
-                ResourceObject approval = this.GetResourceByKey(ObjectTypeNames.Approval, AttributeNames.ObjectID, id);
+                ResourceObject approval = Global.Client.GetResourceByKey(ObjectTypeNames.Approval, AttributeNames.ObjectID, id);
 
                 if (string.Equals(decision, "approve", StringComparison.OrdinalIgnoreCase))
                 {
@@ -598,7 +598,7 @@ namespace Lithnet.ResourceManagement.WebService.v1
                 {
                     Global.Client.Approve(approval, false, reason?.Reason);
                 }
-                else
+                else 
                 {
                     throw new ArgumentException($"The value '{decision}' is not supported. Allowed values are 'Approve' or 'Reject'");
                 }
@@ -659,9 +659,7 @@ namespace Lithnet.ResourceManagement.WebService.v1
                     requestParameters.Add(XmlDeserializeFromString<RequestParameter>(param));
                 }
 
-                WebOperationContext.Current.OutgoingResponse.ContentType = "application/json; charset=utf-8";
-
-                return new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(requestParameters)));
+                return ResourceManagementWebServicev1.GetResponse(requestParameters);
             }
             catch (WebFaultException)
             {
@@ -711,6 +709,28 @@ namespace Lithnet.ResourceManagement.WebService.v1
             {
                 throw new ArgumentException("The specified value was not a GUID type", nameof(id));
             }
+        }
+
+        private static Stream GetResponse(object r)
+        {
+            ResourceSerializationSettings settings = new ResourceSerializationSettings
+            {
+                ArrayHandling = ArraySerializationHandling.WhenRequired,
+                IncludeNullValues = false,
+                IncludePermissionHints = false,
+                ResourceFormat = ResourceSerializationHandling.AttributeValuePairs,
+                ValueFormat = AttributeValueSerializationHandling.ConvertToString
+            };
+
+            JsonSerializerSettings d = new JsonSerializerSettings
+            {
+                Context = new StreamingContext(StreamingContextStates.Other, settings),
+                ReferenceLoopHandling = ReferenceLoopHandling.Serialize
+            };
+
+            WebOperationContext.Current.OutgoingResponse.ContentType = "application/json; charset=utf-8";
+
+            return new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(r, d)));
         }
     }
 }

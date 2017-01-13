@@ -24,7 +24,6 @@ namespace Lithnet.ResourceManagement.WebService.v2
     [SwaggerWcf("/v2")]
     [AspNetCompatibilityRequirements(RequirementsMode = AspNetCompatibilityRequirementsMode.Allowed)]
     [KnownType(typeof(ResourceObject))]
-    [KnownType(typeof(string))]
     public class ResourceManagementWebServicev2 : IResourceManagementWebServicev2
     {
         private static MemoryCache searchCache = new MemoryCache("seach-results");
@@ -33,7 +32,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
         [SwaggerWcfResponse(HttpStatusCode.OK, "Results found")]
         [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request")]
         [SwaggerWcfResponse(HttpStatusCode.InternalServerError, "Internal error")]
-        public PagedResultSet GetResourcesPaged()
+        public Stream GetResourcesPaged()
         {
             try
             {
@@ -46,7 +45,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
                 string currentIndexParam = context.UriTemplateMatch.QueryParameters["index"];
                 string token = context.UriTemplateMatch.QueryParameters["token"];
 
-                int pageSize = ResourceManagementWebServicev2.GetPageSize(context);
+                int pageSize = WebResponseHelper.GetPageSize(context);
                 int index = currentIndexParam == null ? -1 : Convert.ToInt32(currentIndexParam);
 
                 SearchResultPager p = ResourceManagementWebServicev2.GetSearchResultPager(context, pageSize, token);
@@ -79,7 +78,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
 
                 ResourceManagementWebServicev2.searchCache.Add(ResourceManagementWebServicev2.BuildCacheKey(token), p, new CacheItemPolicy() { SlidingExpiration = new TimeSpan(0, 5, 0) });
 
-                return results;
+                return WebResponseHelper.GetResponse(results, false);
             }
             catch (WebFaultException)
             {
@@ -101,13 +100,13 @@ namespace Lithnet.ResourceManagement.WebService.v2
         [SwaggerWcfResponse(HttpStatusCode.OK, "Results found")]
         [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request")]
         [SwaggerWcfResponse(HttpStatusCode.InternalServerError, "Internal error")]
-        public ResourceObject GetResourceByKey(string objectType, string key, string keyValue)
+        public Stream GetResourceByKey(string objectType, string key, string keyValue)
         {
             try
             {
                 ResourceManagementSchema.ValidateAttributeName(key);
                 ResourceManagementSchema.ValidateObjectTypeName(objectType);
-                CultureInfo locale = GetLocaleFromParameters();
+                CultureInfo locale = WebResponseHelper.GetLocale();
 
                 ResourceObject resource = Global.Client.GetResourceByKey(objectType, key, keyValue, locale);
 
@@ -116,7 +115,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
                     throw new ResourceNotFoundException();
                 }
 
-                return resource;
+                return WebResponseHelper.GetResponse(resource, false);
             }
             catch (WebFaultException)
             {
@@ -138,21 +137,22 @@ namespace Lithnet.ResourceManagement.WebService.v2
         [SwaggerWcfResponse(HttpStatusCode.OK, "Results found")]
         [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request")]
         [SwaggerWcfResponse(HttpStatusCode.InternalServerError, "Internal error")]
-        public ResourceObject GetResourceByID(string id)
+        public Stream GetResourceByID(string id)
         {
             try
             {
                 ResourceManagementWebServicev2.ValidateID(id);
-                CultureInfo locale = GetLocaleFromParameters();
+                CultureInfo locale = WebResponseHelper.GetLocale();
+                bool includePermissionHints = WebResponseHelper.IsParameterSet(ParameterNames.IncludePermissionHints);
 
-                ResourceObject resource = Global.Client.GetResource(id, locale);
+                ResourceObject resource = Global.Client.GetResource(id, locale, includePermissionHints);
 
                 if (resource == null)
                 {
                     throw new ResourceNotFoundException();
                 }
 
-                return resource;
+                return WebResponseHelper.GetResponse(resource, true);
             }
             catch (WebFaultException)
             {
@@ -180,7 +180,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
             {
                 ResourceManagementSchema.ValidateAttributeName(attribute);
                 ResourceManagementWebServicev2.ValidateID(id);
-                CultureInfo locale = GetLocaleFromParameters();
+                CultureInfo locale = WebResponseHelper.GetLocale();
 
                 ResourceObject resource = Global.Client.GetResource(id, new List<string>() { attribute }, locale);
                 if (resource == null)
@@ -254,7 +254,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
             {
                 ResourceManagementSchema.ValidateAttributeName(attribute);
                 ResourceManagementSchema.ValidateObjectTypeName(objectType);
-                CultureInfo locale = GetLocaleFromParameters();
+                CultureInfo locale = WebResponseHelper.GetLocale();
 
                 ResourceObject resource = Global.Client.GetResourceByKey(objectType, key, keyValue, new List<string>() { attribute }, locale);
 
@@ -352,7 +352,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
         [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request")]
         [SwaggerWcfResponse(HttpStatusCode.InternalServerError, "Internal error")]
         [SwaggerWcfResponse(HttpStatusCode.Accepted, "Pending approval")]
-        public ResourceObject CreateResource(ResourceUpdateRequest request)
+        public Stream CreateResource(ResourceUpdateRequest request)
         {
             try
             {
@@ -403,7 +403,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
                 else
                 {
                     resource.Refresh();
-                    return resource;
+                    return WebResponseHelper.GetResponse(resource, false);
                 }
             }
             catch (WebFaultException)
@@ -432,7 +432,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
             try
             {
                 ResourceManagementWebServicev2.ValidateID(id);
-                CultureInfo locale = GetLocaleFromParameters();
+                CultureInfo locale = WebResponseHelper.GetLocale();
 
                 ResourceObject resource = Global.Client.GetResource(id, locale);
                 foreach (AttributeValueUpdate kvp in request.Attributes)
@@ -473,7 +473,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
         [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
         [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
         [SwaggerWcfResponse(HttpStatusCode.InternalServerError, "Internal error")]
-        public IEnumerable<ResourceObject> GetApprovalRequests()
+        public Stream GetApprovalRequests()
         {
             return this.GetApprovalRequestsByStatus("Unknown");
         }
@@ -483,7 +483,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
         [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
         [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request", true)]
         [SwaggerWcfResponse(HttpStatusCode.InternalServerError, "Internal error")]
-        public IEnumerable<ResourceObject> GetApprovalRequestsByStatus(string status)
+        public Stream GetApprovalRequestsByStatus(string status)
         {
             try
             {
@@ -491,7 +491,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
 
                 if (Enum.TryParse(status, true, out approvalStatus))
                 {
-                    return Global.Client.GetApprovals(approvalStatus).ToList();
+                    return WebResponseHelper.GetResponse(Global.Client.GetApprovals(approvalStatus).ToList(), false);
                 }
 
                 throw new ArgumentException("Invalid value for status parameter", nameof(status));
@@ -522,7 +522,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
             {
                 ResourceManagementWebServicev2.ValidateID(id);
 
-                ResourceObject approval = this.GetResourceByKey(ObjectTypeNames.Approval, AttributeNames.ObjectID, id);
+                ResourceObject approval = Global.Client.GetResourceByKey(ObjectTypeNames.Approval, AttributeNames.ObjectID, id);
 
                 if (string.Equals(decision, "approve", StringComparison.OrdinalIgnoreCase))
                 {
@@ -563,19 +563,19 @@ namespace Lithnet.ResourceManagement.WebService.v2
             {
                 ResourceManagementWebServicev2.ValidateID(id);
 
-                ResourceObject request = Global.Client.GetResourceByKey("Request", AttributeNames.ObjectID, id, new[] { "RequestParameter" });
+                ResourceObject request = Global.Client.GetResourceByKey(ObjectTypeNames.Request, AttributeNames.ObjectID, id, new[] { AttributeNames.RequestParameter });
 
                 if (request == null)
                 {
                     throw new WebFaultException(HttpStatusCode.NotFound);
                 }
 
-                if (!request.Attributes.ContainsAttribute("RequestParameter") || request.Attributes["RequestParameter"].IsNull)
+                if (!request.Attributes.ContainsAttribute(AttributeNames.RequestParameter) || request.Attributes[AttributeNames.RequestParameter].IsNull)
                 {
                     return new MemoryStream();
                 }
 
-                IList<string> parameters = request.Attributes["RequestParameter"].StringValues;
+                IList<string> parameters = request.Attributes[AttributeNames.RequestParameter].StringValues;
                 List<RequestParameter> requestParameters = new List<RequestParameter>();
 
                 foreach (string param in parameters)
@@ -583,9 +583,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
                     requestParameters.Add(XmlDeserializeFromString<RequestParameter>(param));
                 }
 
-                WebOperationContext.Current.OutgoingResponse.ContentType = "application/json; charset=utf-8";
-
-                return new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(requestParameters)));
+                return WebResponseHelper.GetResponse(requestParameters, false);
             }
             catch (WebFaultException)
             {
@@ -602,12 +600,12 @@ namespace Lithnet.ResourceManagement.WebService.v2
             }
         }
 
-        internal static T XmlDeserializeFromString<T>(string objectData)
+        private static T XmlDeserializeFromString<T>(string objectData)
         {
             return (T)XmlDeserializeFromString(objectData, typeof(T));
         }
 
-        internal static object XmlDeserializeFromString(string objectData, Type type)
+        private static object XmlDeserializeFromString(string objectData, Type type)
         {
             XmlSerializer serializer = new XmlSerializer(type);
             object result;
@@ -669,13 +667,6 @@ namespace Lithnet.ResourceManagement.WebService.v2
             return token + ((WindowsIdentity)HttpContext.Current.User.Identity).Name;
         }
 
-        private static CultureInfo GetLocaleFromParameters()
-        {
-            string locale = WebOperationContext.Current?.IncomingRequest.UriTemplateMatch.QueryParameters["locale"];
-
-            return locale != null ? new CultureInfo(locale) : null;
-        }
-
         private static void GetPageUris(IncomingWebRequestContext context, int oldIndex, int pageSize, string token, SearchResultPager pager, out Uri previousPageUri, out Uri nextPageUri)
         {
             string basePageUri = context.UriTemplateMatch.BaseUri.OriginalString.TrimEnd('/');
@@ -705,9 +696,9 @@ namespace Lithnet.ResourceManagement.WebService.v2
 
             if (token == null)
             {
-                string filter = ResourceManagementWebServicev2.GetFilterText(context);
-                CultureInfo locale = ResourceManagementWebServicev2.GetLocaleFromParameters();
-                IEnumerable<string> attributes = ResourceManagementWebServicev2.GetAttributes(context);
+                string filter = WebResponseHelper.GetFilterText(context);
+                CultureInfo locale = WebResponseHelper.GetLocale();
+                IEnumerable<string> attributes = WebResponseHelper.GetAttributes(context);
 
                 if (attributes != null)
                 {
@@ -729,67 +720,5 @@ namespace Lithnet.ResourceManagement.WebService.v2
             }
             return p;
         }
-
-        private static IEnumerable<string> GetAttributes(IncomingWebRequestContext context)
-        {
-            string attributes = context.UriTemplateMatch.QueryParameters["attributes"];
-            string objectType = context.UriTemplateMatch.QueryParameters["objectType"];
-
-            if (attributes != null)
-            {
-                return attributes.Split(',');
-            }
-
-            if (objectType != null)
-            {
-                return ResourceManagementSchema.ObjectTypes[objectType].Attributes.Select(t => t.SystemName);
-            }
-
-            return null;
-        }
-
-        private static string GetFilterText(IncomingWebRequestContext context)
-        {
-            string filter = context.UriTemplateMatch.QueryParameters["filter"];
-            string objectType = context.UriTemplateMatch.QueryParameters["objectType"];
-
-            if (filter != null)
-            {
-                return filter;
-            }
-
-            if (objectType == null)
-            {
-                filter = "/*";
-            }
-            else
-            {
-                filter = $"/{objectType}";
-            }
-
-            return filter;
-        }
-
-        private static int GetPageSize(IncomingWebRequestContext context)
-        {
-            string pageSizeParam = context.UriTemplateMatch.QueryParameters["pageSize"];
-
-            int pageSize;
-
-            if (pageSizeParam == null)
-            {
-                pageSize = 100;
-            }
-            else
-            {
-                pageSize = Convert.ToInt32(pageSizeParam);
-            }
-            if (pageSize <= 0)
-            {
-                throw new ArgumentException("Page size must be greater than zero");
-            }
-            return pageSize;
-        }
-
     }
 }

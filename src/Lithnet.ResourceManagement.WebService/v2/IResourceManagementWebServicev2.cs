@@ -4,6 +4,7 @@ using System.ServiceModel;
 using System.ServiceModel.Web;
 using Lithnet.ResourceManagement.Client;
 using System.IO;
+using System.Runtime.Serialization;
 using SwaggerWcf.Attributes;
 
 namespace Lithnet.ResourceManagement.WebService.v2
@@ -14,17 +15,17 @@ namespace Lithnet.ResourceManagement.WebService.v2
         [SwaggerWcfPath("Get resources", "Get resources")]
         [OperationContract]
         [WebGet(UriTemplate = "/resources/?", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
-        PagedResultSet GetResourcesPaged();
+        Stream GetResourcesPaged();
         
         [SwaggerWcfPath("Get resource by key", "Get resources")]
         [OperationContract]
         [WebGet(UriTemplate = "/resources/{objectType}/{key}/{keyValue}/?", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
-        ResourceObject GetResourceByKey(string objectType, string key, string keyValue);
+        Stream GetResourceByKey(string objectType, string key, string keyValue);
 
         [SwaggerWcfPath("Get resource by id", "Get resources")]
         [OperationContract]
         [WebGet(UriTemplate = "/resources/{id}/?", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
-        ResourceObject GetResourceByID(string id);
+        Stream GetResourceByID(string id);
 
         [SwaggerWcfPath("Delete resource", "Delete resource")]
         [OperationContract]
@@ -34,7 +35,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
         [SwaggerWcfPath("Create resource", "Create resource")]
         [OperationContract]
         [WebInvoke(UriTemplate = "/resources/", Method = "POST", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
-        ResourceObject CreateResource(ResourceUpdateRequest resource);
+        Stream CreateResource(ResourceUpdateRequest resource);
 
         [SwaggerWcfPath("Update resource", "Update resources")]
         [OperationContract]
@@ -44,12 +45,12 @@ namespace Lithnet.ResourceManagement.WebService.v2
         [SwaggerWcfPath("Get approval requests", "Get approval requests")]
         [OperationContract]
         [WebGet(UriTemplate = "/approvals/", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
-        IEnumerable<ResourceObject> GetApprovalRequests();
+        Stream GetApprovalRequests();
 
         [SwaggerWcfPath("Get approval requests", "Get approval requests")]
         [OperationContract]
         [WebGet(UriTemplate = "/approvals/{status}", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
-        IEnumerable<ResourceObject> GetApprovalRequestsByStatus(string status);
+        Stream GetApprovalRequestsByStatus(string status);
 
         [SwaggerWcfPath("Approve request", "Approve request")]
         [OperationContract]
