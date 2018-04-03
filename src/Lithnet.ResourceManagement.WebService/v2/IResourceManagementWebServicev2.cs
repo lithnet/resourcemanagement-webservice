@@ -27,6 +27,11 @@ namespace Lithnet.ResourceManagement.WebService.v2
         [WebGet(UriTemplate = "/resources/{id}/?", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
         Stream GetResourceByID(string id);
 
+        [SwaggerWcfPath("Get resource attribute by id", "Get resources")]
+        [OperationContract]
+        [WebGet(UriTemplate = "/resources/{id}/{attribute}/?", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
+        Stream GetResourceAttributeByID(string id, string attribute);
+
         [SwaggerWcfPath("Delete resource", "Delete resource")]
         [OperationContract]
         [WebInvoke(UriTemplate = "/resources/{id}/", Method = "DELETE", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]

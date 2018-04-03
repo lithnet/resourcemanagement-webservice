@@ -720,5 +720,51 @@ namespace Lithnet.ResourceManagement.WebService.v2
             }
             return p;
         }
+
+        Stream IResourceManagementWebServicev2.GetResourceAttributeByID(string id, string attribute)
+        {
+            try
+            {
+                ResourceManagementSchema.ValidateAttributeName(attribute);
+                ResourceManagementWebServicev2.ValidateID(id);
+                CultureInfo locale = WebResponseHelper.GetLocale();
+                bool includePermissionHints = WebResponseHelper.IsParameterSet(ParameterNames.IncludePermissionHints);
+
+                ResourceObject resource = Global.Client.GetResource(id, new[] { attribute }, locale, includePermissionHints);
+
+                if (resource == null)
+                {
+                    throw new ResourceNotFoundException();
+                }
+
+                if (!resource.Attributes.ContainsAttribute(attribute))
+                {
+                    WebOperationContext.Current.OutgoingResponse.StatusCode = HttpStatusCode.NoContent;
+                    return null;
+                }
+
+                List<string> result = resource.Attributes[attribute].ToStringValues().ToList();
+                //if (result.Count == 0)
+                //{
+                //    return WebResponseHelper.GetResponse(new string[0], false);
+                //}
+
+                return WebResponseHelper.GetResponse(result, true);
+
+            }
+            catch (WebFaultException)
+            {
+                throw;
+            }
+            catch (WebFaultException<Error>)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                ResourceManagementWebServicev2.HandleException(ex);
+                throw;
+            }
+        }
     }
 }

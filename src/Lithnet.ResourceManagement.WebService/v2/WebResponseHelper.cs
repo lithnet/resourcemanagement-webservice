@@ -118,7 +118,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
 
             if (objectType != null)
             {
-                return ResourceManagementSchema.ObjectTypes[objectType].Attributes.Select(t => t.SystemName);
+                return ResourceManagementSchema.GetObjectType(objectType).Attributes.Select(t => t.SystemName);
             }
 
             return null;

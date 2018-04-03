@@ -55,7 +55,7 @@ namespace Lithnet.ResourceManagement.WebService.v1
 
                 if (objectType != null)
                 {
-                    return ResourceManagementWebServicev1.GetResponse(Global.Client.GetResources(filter, ResourceManagementSchema.ObjectTypes[objectType].Attributes.Select(t => t.SystemName), locale).ToList());
+                    return ResourceManagementWebServicev1.GetResponse(Global.Client.GetResources(filter, ResourceManagementSchema.GetObjectType(objectType).Attributes.Select(t => t.SystemName), locale).ToList());
                 }
                 else
                 {
