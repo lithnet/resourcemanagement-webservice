@@ -21,9 +21,15 @@ namespace Lithnet.ResourceManagement.WebService.v2
             throw new WebFaultException<PendingAuthorizationData>(data, HttpStatusCode.Accepted);
         }
 
-        public static void ThrowNotFoundException()
+        public static void ThrowResourceNotFoundException()
         {
             ErrorData e = new ErrorData("resource-not-found", "The specified resource was not found");
+            throw new WebFaultException<Error>(new Error(e), HttpStatusCode.NotFound);
+        }
+
+        public static void ThrowAttributeNotFoundException(string attributeName)
+        {
+            ErrorData e = new ErrorData("attribute-not-found", $"The specified attribute '{attributeName}' was not found");
             throw new WebFaultException<Error>(new Error(e), HttpStatusCode.NotFound);
         }
 

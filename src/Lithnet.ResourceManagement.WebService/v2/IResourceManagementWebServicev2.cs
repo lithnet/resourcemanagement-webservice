@@ -47,6 +47,23 @@ namespace Lithnet.ResourceManagement.WebService.v2
         [WebInvoke(UriTemplate = "/resources/{id}/?", Method = "PATCH", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
         void UpdateResource(string id, ResourceUpdateRequest request);
 
+
+        [SwaggerWcfPath("Add a value to a multi-valued attribute", "Update resources")]
+        [OperationContract]
+        [WebInvoke(UriTemplate = "/resources/{id}/{attribute}/{value}/?", Method = "PUT", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
+        void AddAttributeValue(string id, string attribute, string value);
+
+        [SwaggerWcfPath("Remove a value from a multi-valued attribute", "Update resources")]
+        [OperationContract]
+        [WebInvoke(UriTemplate = "/resources/{id}/{attribute}/{value}/?", Method = "DELETE", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
+        void RemoveAttributeValue(string id, string attribute, string value);
+
+        [SwaggerWcfPath("Delete all values from an attribute", "Update resources")]
+        [OperationContract]
+        [WebInvoke(UriTemplate = "/resources/{id}/{attribute}/?", Method = "DELETE", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
+        void DeleteAttributeValues(string id, string attribute);
+
+
         [SwaggerWcfPath("Get approval requests", "Get approval requests")]
         [OperationContract]
         [WebGet(UriTemplate = "/approvals/", ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]

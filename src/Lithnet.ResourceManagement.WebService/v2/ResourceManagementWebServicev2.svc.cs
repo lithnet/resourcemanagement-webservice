@@ -26,7 +26,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
     [KnownType(typeof(ResourceObject))]
     public class ResourceManagementWebServicev2 : IResourceManagementWebServicev2
     {
-        private static MemoryCache searchCache = new MemoryCache("seach-results");
+        private static MemoryCache searchCache = new MemoryCache("search-results");
 
         [SwaggerWcfTag("Resources")]
         [SwaggerWcfResponse(HttpStatusCode.OK, "Results found")]
@@ -66,10 +66,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
                     Results = p.GetNextPage().ToList(),
                 };
 
-                Uri nextPageUri;
-                Uri previousPageUri;
-
-                ResourceManagementWebServicev2.GetPageUris(context, oldIndex, pageSize, token, p, out previousPageUri, out nextPageUri);
+                ResourceManagementWebServicev2.GetPageUris(context, oldIndex, pageSize, token, p, out Uri previousPageUri, out Uri nextPageUri);
 
                 results.NextPage = nextPageUri?.ToString();
                 results.PreviousPage = previousPageUri?.ToString();
@@ -153,155 +150,6 @@ namespace Lithnet.ResourceManagement.WebService.v2
                 }
 
                 return WebResponseHelper.GetResponse(resource, true);
-            }
-            catch (WebFaultException)
-            {
-                throw;
-            }
-            catch (WebFaultException<Error>)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                ResourceManagementWebServicev2.HandleException(ex);
-                throw;
-            }
-        }
-
-        [SwaggerWcfTag("Resources")]
-        [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
-        [SwaggerWcfResponse(HttpStatusCode.OK, "Results found")]
-        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request")]
-        [SwaggerWcfResponse(HttpStatusCode.InternalServerError, "Internal error")]
-        public KeyValuePair<string, string[]>? GetResourceAttributeByID(string id, string attribute)
-        {
-            try
-            {
-                ResourceManagementSchema.ValidateAttributeName(attribute);
-                ResourceManagementWebServicev2.ValidateID(id);
-                CultureInfo locale = WebResponseHelper.GetLocale();
-
-                ResourceObject resource = Global.Client.GetResource(id, new List<string>() { attribute }, locale);
-                if (resource == null)
-                {
-                    throw new ResourceNotFoundException();
-                }
-
-                object value = resource.Attributes[attribute].Value;
-                List<string> valuesToReturn = new List<string>();
-
-                if (value is string)
-                {
-                    valuesToReturn.Add(value as string);
-                }
-                else if (value is byte[])
-                {
-                    valuesToReturn.Add(Convert.ToBase64String((byte[])value));
-                }
-                else
-                {
-                    IEnumerable values = value as IEnumerable;
-                    if (values != null)
-                    {
-                        foreach (object enumvalue in values)
-                        {
-                            if (enumvalue is DateTime)
-                            {
-                                valuesToReturn.Add(((DateTime)enumvalue).ToResourceManagementServiceDateFormat());
-                            }
-                            else if (enumvalue is byte[])
-                            {
-                                valuesToReturn.Add(Convert.ToBase64String((byte[])enumvalue));
-                            }
-                            else
-                            {
-                                valuesToReturn.Add(enumvalue.ToString());
-                            }
-                        }
-                    }
-                    else
-                    {
-                        valuesToReturn.Add(value.ToString());
-                    }
-                }
-
-                return new KeyValuePair<string, string[]>(attribute, valuesToReturn.ToArray());
-            }
-            catch (WebFaultException)
-            {
-                throw;
-            }
-            catch (WebFaultException<Error>)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                ResourceManagementWebServicev2.HandleException(ex);
-                throw;
-            }
-        }
-
-        [SwaggerWcfTag("Resources")]
-        [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
-        [SwaggerWcfResponse(HttpStatusCode.OK, "Results found")]
-        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request")]
-        [SwaggerWcfResponse(HttpStatusCode.InternalServerError, "Internal error")]
-        public KeyValuePair<string, string[]>? GetResourceAttributeByKey(string objectType, string key, string keyValue, string attribute)
-        {
-            try
-            {
-                ResourceManagementSchema.ValidateAttributeName(attribute);
-                ResourceManagementSchema.ValidateObjectTypeName(objectType);
-                CultureInfo locale = WebResponseHelper.GetLocale();
-
-                ResourceObject resource = Global.Client.GetResourceByKey(objectType, key, keyValue, new List<string>() { attribute }, locale);
-
-                if (resource == null)
-                {
-                    throw new ResourceNotFoundException();
-                }
-
-                object value = resource.Attributes[attribute].Value;
-                List<string> valuesToReturn = new List<string>();
-
-                if (value is string)
-                {
-                    valuesToReturn.Add(value as string);
-                }
-                else if (value is byte[])
-                {
-                    valuesToReturn.Add(Convert.ToBase64String((byte[])value));
-                }
-                else
-                {
-                    IEnumerable values = value as IEnumerable;
-                    if (values != null)
-                    {
-                        foreach (object enumvalue in values)
-                        {
-                            if (enumvalue is DateTime)
-                            {
-                                valuesToReturn.Add(((DateTime)enumvalue).ToResourceManagementServiceDateFormat());
-                            }
-                            else if (enumvalue is byte[])
-                            {
-                                valuesToReturn.Add(Convert.ToBase64String((byte[])enumvalue));
-                            }
-                            else
-                            {
-                                valuesToReturn.Add(enumvalue.ToString());
-                            }
-                        }
-                    }
-                    else
-                    {
-                        valuesToReturn.Add(value.ToString());
-                    }
-                }
-
-                return new KeyValuePair<string, string[]>(attribute, valuesToReturn.ToArray());
             }
             catch (WebFaultException)
             {
@@ -468,6 +316,204 @@ namespace Lithnet.ResourceManagement.WebService.v2
             }
         }
 
+
+        [SwaggerWcfTag("Resources")]
+        [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
+        [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
+        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request")]
+        [SwaggerWcfResponse(HttpStatusCode.InternalServerError, "Internal error")]
+        [SwaggerWcfResponse(HttpStatusCode.Accepted, "Pending approval")]
+        public Stream GetResourceAttributeByID(string id, string attribute)
+        {
+            try
+            {
+                ResourceManagementSchema.ValidateAttributeName(attribute);
+                ResourceManagementWebServicev2.ValidateID(id);
+                CultureInfo locale = WebResponseHelper.GetLocale();
+
+                ResourceObject resource = Global.Client.GetResource(id, new[] { attribute }, locale);
+
+                if (resource == null)
+                {
+                    throw new ResourceNotFoundException();
+                }
+
+                if (!resource.Attributes.ContainsAttribute(attribute))
+                {
+                    WebResponseHelper.ThrowAttributeNotFoundException(attribute);
+                }
+
+                List<string> result = resource.Attributes[attribute].ToStringValues().ToList();
+
+                return WebResponseHelper.GetResponse(result, true);
+            }
+            catch (WebFaultException)
+            {
+                throw;
+            }
+            catch (WebFaultException<Error>)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                ResourceManagementWebServicev2.HandleException(ex);
+                throw;
+            }
+        }
+
+        [SwaggerWcfTag("Resources")]
+        [SwaggerWcfResponse(HttpStatusCode.NoContent, "Update successful")]
+        [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
+        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request")]
+        [SwaggerWcfResponse(HttpStatusCode.InternalServerError, "Internal error")]
+        [SwaggerWcfResponse(HttpStatusCode.Accepted, "Pending approval")]
+        public void AddAttributeValue(string id, string attribute, string value)
+        {
+            try
+            {
+                ResourceManagementSchema.ValidateAttributeName(attribute);
+                ResourceManagementWebServicev2.ValidateID(id);
+                CultureInfo locale = WebResponseHelper.GetLocale();
+                ResourceObject resource = Global.Client.GetResource(id, locale);
+
+                if (resource == null)
+                {
+                    throw new ResourceNotFoundException();
+                }
+
+                if (!resource.Attributes.ContainsAttribute(attribute))
+                {
+                    WebResponseHelper.ThrowAttributeNotFoundException(attribute);
+                }
+
+                if (resource.Attributes[attribute].Attribute.IsMultivalued)
+                {
+                    resource.Attributes[attribute].AddValue(value);
+                }
+                else
+                {
+                    resource.Attributes[attribute].SetValue(value);
+                }
+
+                Global.Client.SaveResource(resource, locale);
+                WebOperationContext.Current.OutgoingResponse.StatusCode = HttpStatusCode.NoContent;
+            }
+            catch (WebFaultException)
+            {
+                throw;
+            }
+            catch (WebFaultException<Error>)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                ResourceManagementWebServicev2.HandleException(ex);
+                throw;
+            }
+        }
+
+        [SwaggerWcfTag("Resources")]
+        [SwaggerWcfResponse(HttpStatusCode.NoContent, "Update successful")]
+        [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
+        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request")]
+        [SwaggerWcfResponse(HttpStatusCode.InternalServerError, "Internal error")]
+        [SwaggerWcfResponse(HttpStatusCode.Accepted, "Pending approval")]
+        public void RemoveAttributeValue(string id, string attribute, string value)
+        {
+            try
+            {
+                ResourceManagementSchema.ValidateAttributeName(attribute);
+                ResourceManagementWebServicev2.ValidateID(id);
+                CultureInfo locale = WebResponseHelper.GetLocale();
+
+                ResourceObject resource;
+
+                if (ResourceManagementSchema.IsAttributeMultivalued(attribute))
+                {
+                    resource = Global.Client.GetResource(id, locale);
+                }
+                else
+                {
+                    resource = Global.Client.GetResource(id, new[] { attribute }, locale);
+                }
+
+                if (resource == null)
+                {
+                    throw new ResourceNotFoundException();
+                }
+
+                if (!resource.Attributes.ContainsAttribute(attribute))
+                {
+                    WebResponseHelper.ThrowAttributeNotFoundException(attribute);
+                }
+
+                resource.Attributes[attribute].RemoveValue(value, true);
+
+                Global.Client.SaveResource(resource, locale);
+                WebOperationContext.Current.OutgoingResponse.StatusCode = HttpStatusCode.NoContent;
+            }
+            catch (WebFaultException)
+            {
+                throw;
+            }
+            catch (WebFaultException<Error>)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                ResourceManagementWebServicev2.HandleException(ex);
+                throw;
+            }
+        }
+
+        [SwaggerWcfTag("Resources")]
+        [SwaggerWcfResponse(HttpStatusCode.NoContent, "Update successful")]
+        [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
+        [SwaggerWcfResponse(HttpStatusCode.BadRequest, "Bad request")]
+        [SwaggerWcfResponse(HttpStatusCode.InternalServerError, "Internal error")]
+        [SwaggerWcfResponse(HttpStatusCode.Accepted, "Pending approval")]
+        public void DeleteAttributeValues(string id, string attribute)
+        {
+            try
+            {
+                ResourceManagementSchema.ValidateAttributeName(attribute);
+                ResourceManagementWebServicev2.ValidateID(id);
+                CultureInfo locale = WebResponseHelper.GetLocale();
+                ResourceObject resource = Global.Client.GetResource(id, new[] { attribute }, locale);
+
+                if (resource == null)
+                {
+                    throw new ResourceNotFoundException();
+                }
+
+                if (!resource.Attributes.ContainsAttribute(attribute))
+                {
+                    WebResponseHelper.ThrowAttributeNotFoundException(attribute);
+                }
+
+                resource.Attributes[attribute].RemoveValues();
+
+                Global.Client.SaveResource(resource, locale);
+                WebOperationContext.Current.OutgoingResponse.StatusCode = HttpStatusCode.NoContent;
+            }
+            catch (WebFaultException)
+            {
+                throw;
+            }
+            catch (WebFaultException<Error>)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                ResourceManagementWebServicev2.HandleException(ex);
+                throw;
+            }
+        }
+
         [SwaggerWcfTag("Approvals")]
         [SwaggerWcfResponse(HttpStatusCode.OK, "Result found")]
         [SwaggerWcfResponse(HttpStatusCode.NotFound, "Not found")]
@@ -487,9 +533,8 @@ namespace Lithnet.ResourceManagement.WebService.v2
         {
             try
             {
-                Client.ApprovalStatus approvalStatus;
 
-                if (Enum.TryParse(status, true, out approvalStatus))
+                if (Enum.TryParse(status, true, out Client.ApprovalStatus approvalStatus))
                 {
                     return WebResponseHelper.GetResponse(Global.Client.GetApprovals(approvalStatus).ToList(), false);
                 }
@@ -620,9 +665,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
 
         private static void ValidateID(string id)
         {
-            Guid result;
-
-            if (!Guid.TryParse(id, out result))
+            if (!Guid.TryParse(id, out Guid result))
             {
                 throw new ArgumentException("The specified value was not a GUID type", nameof(id));
             }
@@ -632,29 +675,25 @@ namespace Lithnet.ResourceManagement.WebService.v2
         {
             if (ex is ResourceNotFoundException)
             {
-                WebResponseHelper.ThrowNotFoundException();
+                WebResponseHelper.ThrowResourceNotFoundException();
             }
 
-            AuthorizationRequiredException exception = ex as AuthorizationRequiredException;
-            if (exception != null)
+            if (ex is AuthorizationRequiredException exception)
             {
                 WebResponseHelper.ThrowAuthorizationRequired(exception);
             }
 
-            PermissionDeniedException permissionDeniedException = ex as PermissionDeniedException;
-            if (permissionDeniedException != null)
+            if (ex is PermissionDeniedException permissionDeniedException)
             {
                 WebResponseHelper.ThrowPermissionDeniedException(permissionDeniedException);
             }
 
-            ArgumentException argumentException = ex as ArgumentException;
-            if (argumentException != null)
+            if (ex is ArgumentException argumentException)
             {
                 WebResponseHelper.ThrowArgumentException(argumentException);
             }
 
-            ResourceManagementException managementException = ex as ResourceManagementException;
-            if (managementException != null)
+            if (ex is ResourceManagementException managementException)
             {
                 WebResponseHelper.ThrowResourceManagementException(managementException);
             }
@@ -719,52 +758,6 @@ namespace Lithnet.ResourceManagement.WebService.v2
                 }
             }
             return p;
-        }
-
-        Stream IResourceManagementWebServicev2.GetResourceAttributeByID(string id, string attribute)
-        {
-            try
-            {
-                ResourceManagementSchema.ValidateAttributeName(attribute);
-                ResourceManagementWebServicev2.ValidateID(id);
-                CultureInfo locale = WebResponseHelper.GetLocale();
-                bool includePermissionHints = WebResponseHelper.IsParameterSet(ParameterNames.IncludePermissionHints);
-
-                ResourceObject resource = Global.Client.GetResource(id, new[] { attribute }, locale, includePermissionHints);
-
-                if (resource == null)
-                {
-                    throw new ResourceNotFoundException();
-                }
-
-                if (!resource.Attributes.ContainsAttribute(attribute))
-                {
-                    WebOperationContext.Current.OutgoingResponse.StatusCode = HttpStatusCode.NoContent;
-                    return null;
-                }
-
-                List<string> result = resource.Attributes[attribute].ToStringValues().ToList();
-                //if (result.Count == 0)
-                //{
-                //    return WebResponseHelper.GetResponse(new string[0], false);
-                //}
-
-                return WebResponseHelper.GetResponse(result, true);
-
-            }
-            catch (WebFaultException)
-            {
-                throw;
-            }
-            catch (WebFaultException<Error>)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                ResourceManagementWebServicev2.HandleException(ex);
-                throw;
-            }
         }
     }
 }
