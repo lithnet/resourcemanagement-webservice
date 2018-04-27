@@ -35,7 +35,7 @@ namespace Lithnet.ResourceManagement.WebService.v2
 
         public static void ThrowServerException(Exception ex)
         {
-            ErrorData e = new v2.ErrorData(ex, "interal-server-error");
+            ErrorData e = new v2.ErrorData(ex, "internal-server-error");
 
             throw new WebFaultException<Error>(new Error(e), HttpStatusCode.InternalServerError);
         }
